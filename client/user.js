@@ -75,20 +75,19 @@ function setupBioEditor(viewingUsername, currentBio) {
       return;
     }
 
-    // Add edit link to bio header
+    // Add edit link to bio header using existing CSS class
     const bioHeader = document.getElementById('bio-header');
-    bioHeader.innerHTML = `Bio <a href="#" id="edit-bio-link" style="font-size:0.85rem; font-weight:normal; margin-left:0.5rem;">(edit bio)</a>`;
+    bioHeader.innerHTML = `Bio <a href="#" id="edit-bio-link" class="edit-bio-link">(edit bio)</a>`;
 
-    // Add modal to DOM
+    // Add modal to DOM using existing CSS classes
     document.body.insertAdjacentHTML('beforeend', `
-      <div id="bio-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:999;"></div>
-      <div id="bio-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:2rem; border-radius:8px; z-index:1000; min-width:320px; box-shadow:0 4px 24px rgba(0,0,0,0.15);">
-        <h3 style="margin:0 0 1rem;">Edit Bio</h3>
-        <textarea id="bio-input" rows="4" maxlength="300" style="width:100%; box-sizing:border-box; margin-bottom:0.5rem; padding:0.5rem;"></textarea>
-        <p style="font-size:0.8rem; color:#888; margin:0 0 1rem;">Max 300 characters</p>
-        <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
-          <button id="close-bio-btn" style="padding:0.4rem 1rem;">Cancel</button>
-          <button id="save-bio-btn" style="padding:0.4rem 1rem;">Save</button>
+      <div id="bio-overlay"></div>
+      <div id="bio-modal">
+        <h3>Edit Bio</h3>
+        <textarea id="bio-input" rows="3" maxlength="300"></textarea>
+        <div class="modal-buttons">
+          <button id="save-bio-btn" class="btn">Save</button>
+          <button id="close-bio-btn" class="btn btn-secondary">Cancel</button>
         </div>
       </div>
     `);
