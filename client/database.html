@@ -1454,20 +1454,12 @@
 
     const id = row.dataset.id;
 
-    // Check auth
     let authToken = null;
     try {
       const user = auth.currentUser;
-      if (user) {
-        authToken = await user.getIdToken();
-      }
+      if (user) authToken = await user.getIdToken();
     } catch (err) {
       console.error('Auth error:', err);
-    }
-
-    if (!authToken) {
-      alert('You must be logged in to view revision history.');
-      return;
     }
 
     // Open modal and show loading
@@ -1480,9 +1472,7 @@
     try {
       // Get revision history
       const revisionsRes = await fetch(`${API_BASE_URL}/api/submissions/${id}/revisions`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
       });
 
       if (!revisionsRes.ok) {

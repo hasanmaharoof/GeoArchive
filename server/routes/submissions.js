@@ -297,7 +297,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
 // =============================================================
 // Get revision history for a submission
 // =============================================================
-router.get('/:id/revisions', requireAuth, async (req, res) => {
+router.get('/:id/revisions', async (req, res) => {
   const submissionId = parseIdParam(req, res);
   if (!submissionId) return;
 

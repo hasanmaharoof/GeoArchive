@@ -32,7 +32,7 @@ a {
   padding: 6px 11px;
   background-color: #f9f9f9;
   border-bottom: 1px solid #eee;
-  height: 40px;
+  height: 44px;
 }
 
 .nav-links {
@@ -45,21 +45,23 @@ a {
 .topnav-left {
   display: flex;
   gap: 8px;
+  margin-left: 8px;
 }
 
 .topnav-right {
   display: flex;
   align-items: center;
-  gap: 8px; /* spacing between Login & Users & Forum */
+  gap: 8px;
 }
 
 .logo,
 .logo2 {
-  height: 30px;
+  height: 32px;
   width: auto;
   margin-left: 6px;
-  margin-right: 4px;
-  padding-top: 4px;
+  margin-right: 8px;
+  position: relative;
+  top: 0px;
 }
 
 .topnav a.page {
@@ -184,7 +186,7 @@ a {
 }
 
 .front-logo {
-  width: 240px;
+  width: 255px;
   max-width: 70vw;
   height: auto;
 }
