@@ -55,8 +55,8 @@ if (!element) {
     attributionControl: false
   });
 
-  // Set a pleasant default view (same as your main map default)
-  map.setView(L.latLng(39.30694932409297, -76.75407587537397), 11);
+  // Minimap world view
+  map.setView(L.latLng(35, 0), 2);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     // Keep attribution off on minimap; main map page has it
