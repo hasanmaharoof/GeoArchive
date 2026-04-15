@@ -2888,7 +2888,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 #user-link-container {
   opacity: 0;
   transition: opacity 0.3s ease;
-  min-height: 20px;  /* reserve space before content loads */
+  min-height: 25px;  /* reserve space before content loads */
 }
 #user-link-container.visible {
   opacity: 1;           /* fade in once ready */
@@ -3387,13 +3387,13 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 /* --- LOGIN PAGE --- */
 
 .logincontent {
-  flex-grow: 1;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 60px 20px;
-  background: #fafbfc;  /* subtle off-white background */
+  background: #fafbfc;
   font-family: 'Inter', sans-serif;
+  min-height: calc(100vh - 44px);
 }
 
 /* Login panel */

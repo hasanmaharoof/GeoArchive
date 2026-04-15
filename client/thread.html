@@ -114,7 +114,7 @@
       if (!res.ok) throw new Error('Thread not found');
       const { thread, posts } = await res.json();
 
-      document.title = `${thread.title} — GeoArchive Forum`;
+      document.title = thread.title;
 
       document.getElementById('thread-container').innerHTML = `
         <div class="thread-post thread-op">

@@ -7,63 +7,52 @@
     <link rel="stylesheet" href="style.css"/>
     <script type="module" src="auth.js"></script>
     <link rel="icon" type="image/x-icon" href="logos/favicon.png">
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-YRV1RVTQ89"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-YRV1RVTQ89');
     </script>
 </head>
 <body>
+  <span id="username-display" class="username-ellipse"></span>
+
   <!-- TOPNAV -->
   <div class="topnav">
-    <a href="/forum"><img src="logos/logo2.png" class="logo2" alt="Logo"></a>
+    <a href="/"><img src="logos/logo.png" class="logo" alt="Logo"></a>
     <div class="nav-links">
-        <div class="topnav-left">
-            <a class="page" href="/">Home</a>
-            <a class="page" href="/map">Map</a>
-            <a class="page" href="/database">Database</a>
-            <a class="page" href="/contribute">Contribute</a>
-            <a class="page" href="/about">About</a>
-            <a id="admin-link" class="page" href="/admin" style="display:none">Admin</a>
+      <div class="topnav-left">
+        <a class="page" href="/map">Map</a>
+        <a class="page" href="/database">Database</a>
+        <a class="page" href="/contribute">Contribute</a>
+        <a class="page" href="/about">About</a>
+        <a id="admin-link" class="page" href="/admin" style="display:none">Admin</a>
+      </div>
+      <div class="topnav-right">
+        <div id="topnav-auth">
+          <a class="page" href="/login" id="login-link">Login</a>
         </div>
-        <div class="topnav-right">
-          <div id="topnav-auth" class="topnav-auth";> 
-            <a class="page" href="/login" id="login-link">Login</a>
-          </div>
-          <a class="page" href="/forum">Forum</a>
-        </div>
+        <a class="page" href="/forum">Forum</a>
+      </div>
     </div>
   </div>
 
-  <div class="main-forum-layout">
-    <nav class="vertical-tabs" role="tablist" aria-orientation="vertical">
-      <div id="user-link-container" class="login-link">
-        <a href="/login" id="login-link">Login</a>
-      </div>  
-      <a href="/forum" role="tab" tabindex="-1" class="tab">Forum</a>
-      <a href="users.html" role="tab" tabindex="-1" class="tab">Users</a>
-      <a href="/recent" role="tab" tabindex="-1" class="tab">Recent Contributions</a>
-    </nav>
+  <main class="logincontent">
+    <div id="login-panel" class="login-panel">
+      <h2 class="login">Login or Sign Up</h2>
+      <div id="message-box" class="message-box"></div>
 
-    <main class="logincontent" role="tabpanel" tabindex="0">
-      <div id="login-panel" class="login-panel">
-        <h2 class="login">Login or Sign Up</h2>
-        <div id="message-box" class="message-box"></div>
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <input type="text" id="username" placeholder="Choose a username" style="display:none; margin-top: 1rem;" />
 
-        <input type="email" id="email" placeholder="Email" />
-        <input type="password" id="password" placeholder="Password" />
-        <input type="text" id="username" placeholder="Choose a username" style="display:none; margin-top: 1rem;" />
-
-        <button onclick="login()" class="login">Log In</button>
-        <button onclick="showSignupUsername()" id="show-signup-btn" class="login">Sign Up</button>
-        <button onclick="signup()" id="signup-btn" class="login" style="display:none;">Complete Sign Up</button>
-        <button id="logout-btn" onclick="logout()" class="login" style="display:none;">Log Out</button>
-      </div>
-    </main>
-  </div>
+      <button onclick="login()" class="login">Log In</button>
+      <button onclick="showSignupUsername()" id="show-signup-btn" class="login">Sign Up</button>
+      <button onclick="signup()" id="signup-btn" class="login" style="display:none;">Complete Sign Up</button>
+      <button id="logout-btn" onclick="logout()" class="login" style="display:none;">Log Out</button>
+    </div>
+  </main>
 
 </body>
+</html>
