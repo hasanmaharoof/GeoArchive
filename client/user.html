@@ -5,39 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Profile</title>
   <link rel="stylesheet" href="/style.css" />
-  <link rel="icon" type="image/x-icon" href="logos/favicon.png">
+  <link rel="icon" type="image/x-icon" href="/logos/favicon.png">
   <script type="module" src="/auth.js"></script>
 </head>
 <body>
 
 <div class="topnav">
-  <a href="/index.html">
-    <img src="/logos/logo2.png" class="logo" alt="Forum logo">
-  </a>
+  <a href="/"><img src="/logos/logo.png" class="logo" alt="Logo"></a>
   <div class="nav-links">
     <div class="topnav-left">
-      <a class="page" href="/map.html">Map</a>
-      <a class="page" href="/database.html">Database</a>
-      <a class="page" href="/contribute.html">Contribute</a>
-      <a class="page" href="/about.html">About</a>
-      <a id="admin-link" class="page" href="/admin.html" style="display:none">Admin</a>
+      <a class="page" href="/map">Map</a>
+      <a class="page" href="/database">Database</a>
+      <a class="page" href="/contribute">Contribute</a>
+      <a class="page" href="/about">About</a>
+      <a id="admin-link" class="page" href="/admin" style="display:none">Admin</a>
     </div>
     <div class="topnav-right">
       <div id="topnav-auth">
-        <a class="page" href="/login.html" id="login-link">Login</a>
+        <a class="page" href="/login" id="login-link">Login</a>
       </div>
-      <a class="page" href="/forum.html">Forum</a>
+      <a class="page" href="/forum">Forum</a>
     </div>
   </div>
 </div>
 
 <div class="main-forum-layout">
   <nav class="vertical-tabs" role="tablist" aria-orientation="vertical">
-    <div id="user-link-container" class="login-link">
-      <a href="/login.html">Login</a>
-    </div>
-    <a href="/forum.html" role="tab" class="tab">Forum</a>
-    <a href="/recent.html" role="tab" class="tab">Recent Contributions</a>
+    <div id="user-link-container" class="login-link"></div>
+    <a href="/forum" role="tab" class="tab">Forum</a>
+    <a href="/recent" role="tab" class="tab">Recent Contributions</a>
   </nav>
 
   <main class="forumcontent" role="tabpanel">
