@@ -43,7 +43,8 @@
       <div class="topnav-right"> 
         <div id="topnav-auth"> 
           <a class="page" href="/login" id="login-link">Login</a> 
-        </div> 
+        </div>
+        <a class="page" href="/recent">Recent</a>
         <a class="page" href="/forum">Forum</a> 
       </div> 
     </div> 
@@ -377,6 +378,18 @@
             } 
           } 
         } 
+
+        // Handle ?year= query param
+        const queryYear = new URLSearchParams(window.location.search).get('year');
+        if (queryYear) {
+          const y = parseInt(queryYear, 10);
+          if (Number.isFinite(y)) {
+            const yearRange = document.getElementById('yearRange');
+            const rangeLabel = document.getElementById('rangeLabel');
+            yearRange.value = Math.min(Math.max(y, 1830), 1930);
+            rangeLabel.textContent = y < 1900 ? `Before ${y}` : `Up to ${y}`;
+          }
+        }
  
         renderTable(); 
       } catch (err) { 

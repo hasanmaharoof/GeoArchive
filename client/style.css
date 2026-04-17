@@ -219,6 +219,22 @@ a {
   color: rgba(0, 0, 0, 1);
 }
 
+.front-recent {
+  margin: 0 auto 18px;
+  font-size: 0.98rem;
+  color: rgba(0, 0, 0, 0.68);
+}
+
+.front-recent a {
+  color: rgba(0, 0, 0, 0.82);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.front-recent a:hover {
+  color: rgba(0, 0, 0, 1);
+}
+
 /* Map container */
 .minimapcontainer {
   display: flex;
@@ -2888,7 +2904,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 #user-link-container {
   opacity: 0;
   transition: opacity 0.3s ease;
-  min-height: 25px;  /* reserve space before content loads */
+  min-height: 20px;  /* reserve space before content loads, change to 25px if looks bad */
 }
 #user-link-container.visible {
   opacity: 1;           /* fade in once ready */
@@ -2942,10 +2958,18 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 }
 
 .forum-header h1 {
-  margin: 0;
-  font-size: 28px;
+  margin: 0 0 8px 0;
+  font-size: 32px;
   font-weight: 700;
   color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.forum-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.5;
 }
 
 /* Buttons */
@@ -3384,7 +3408,9 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   color: #fff;
 }
 
-/* --- LOGIN PAGE --- */
+/* =========================
+   LOGIN PAGE
+   ========================= */
 
 .logincontent {
   display: flex;
@@ -3393,7 +3419,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   padding: 60px 20px;
   background: #fafbfc;
   font-family: 'Inter', sans-serif;
-  min-height: calc(100vh - 44px);
+  flex: 1;
 }
 
 /* Login panel */
@@ -3507,7 +3533,6 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
 /* ============================
    NUCLEAR: Force popup photos full width
-   Put this at END of style.css
 ============================ */
 
 /* Force popup container widths to be stable */
