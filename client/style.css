@@ -1738,6 +1738,77 @@ td.uploader-column {
   }
 }
 
+/* Location filter */
+.location-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 1 220px;
+  min-width: 0;
+}
+
+.location-filter-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.location-filter-input-wrap input {
+  width: 100%;
+  height: var(--filter-pill-h);
+  padding: 0 28px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(248, 250, 252, 0.55);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.location-filter-input-wrap input:hover {
+  background: rgba(248, 250, 252, 0.9);
+  border-color: rgba(0, 120, 168, 0.22);
+}
+
+.location-filter-input-wrap input:focus {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 120, 168, 0.65);
+  box-shadow: 0 0 0 4px rgba(0, 120, 168, 0.15);
+}
+
+.location-filter-input-wrap input::placeholder {
+  color: rgba(15, 23, 42, 0.48);
+}
+
+.location-clear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.location-clear:hover { color: #0f172a; }
+
+.location-status {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  min-height: 14px;
+  padding-left: 2px;
+}
+
+.location-status.loading { color: #0078a8; }
+.location-status.error { color: #ef4444; }
+.location-status.active { color: #16a34a; }
+
 /* ===== MODAL SYSTEM (FIXES AUTO-OPEN BUG) ===== */
 
 /* Base modal layout */
@@ -3181,7 +3252,103 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   text-decoration: underline;
 }
 
+/* =========================
+   USERS LIST PAGE
+   ========================= */
+
+.user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 1px solid rgba(15,23,42,0.08);
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.user-card:hover {
+  border-color: rgba(0,120,168,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.user-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-card-rank {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.user-card-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.user-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-card-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.user-card-joined {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.user-card-stats {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.user-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.user-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.user-stat-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* --- USER PROFILE --- */
+
 /* full-width header block that contains centered inner content */
 .profile-header {
   position: relative;          /* needed for the pseudo-element line */
@@ -3559,4 +3726,4 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
   margin: 0 !important;              /* ✅ no bottom gap */
   object-fit: cover !important;
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+}

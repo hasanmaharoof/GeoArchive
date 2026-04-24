@@ -84,6 +84,15 @@
           </label> 
         </div> 
  
+        <!-- Location filter -->
+        <div class="location-filter">
+          <div class="location-filter-input-wrap">
+            <input type="text" id="locationInput" placeholder="Filter by location…" autocomplete="off">
+            <button id="locationClear" class="location-clear" style="display:none" aria-label="Clear location filter">×</button>
+          </div>
+          <div id="locationStatus" class="location-status"></div>
+        </div>
+
         <!-- Right side: uploader + show meta --> 
         <div class="filter-right"> 
  
@@ -140,13 +149,133 @@
     let highlightApplied = false; 
     let userLocation = null; 
     let sortByNearest = false; 
-    let currentSort = { column: null, direction: 'asc' }; // NEW: Track sorting state
+    let currentSort = { column: null, direction: 'asc' };
+    let locationPolygon = null; // array of [lat, lng] pairs when active
  
     const uploaderFilter = document.getElementById('uploader-filter'); 
     const uploaderInput = document.getElementById('uploaderInput'); 
     const showMetaCheckbox = document.getElementById('showMeta'); 
     const TRUNC_LIMIT = 125;
-    
+
+    function pointInPolygon(lat, lng, polygon) {
+      let inside = false;
+      for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i][0], yi = polygon[i][1];
+        const xj = polygon[j][0], yj = polygon[j][1];
+        const intersect = ((yi > lng) !== (yj > lng)) &&
+          (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    async function fetchLocationPolygon(query) {
+      const statusEl = document.getElementById('locationStatus');
+      const clearBtn = document.getElementById('locationClear');
+
+      if (!query.trim()) {
+        locationPolygon = null;
+        statusEl.textContent = '';
+        statusEl.className = 'location-status';
+        clearBtn.style.display = 'none';
+        renderTable();
+        return;
+      }
+
+      statusEl.textContent = 'Searching…';
+      statusEl.className = 'location-status loading';
+
+      try {
+        // Step 1: Nominatim — get OSM relation ID
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&polygon_geojson=0`;
+        const nominatimRes = await fetch(nominatimUrl, {
+          headers: { 'Accept-Language': 'en', 'User-Agent': 'GeoArchive/1.0' }
+        });
+        const nominatimData = await nominatimRes.json();
+
+        if (!nominatimData.length) {
+          statusEl.textContent = 'Place not found.';
+          statusEl.className = 'location-status error';
+          return;
+        }
+
+        const place = nominatimData[0];
+        const osmType = place.osm_type; // 'relation', 'way', or 'node'
+        const osmId = place.osm_id;
+        const displayName = place.display_name.split(',').slice(0, 2).join(',');
+
+        statusEl.textContent = `Loading boundary…`;
+        statusEl.className = 'location-status loading';
+
+        // Step 2: Overpass — get polygon for this OSM relation
+        let overpassQuery;
+        if (osmType === 'relation') {
+          overpassQuery = `[out:json];relation(${osmId});out geom;`;
+        } else if (osmType === 'way') {
+          overpassQuery = `[out:json];way(${osmId});out geom;`;
+        } else {
+          // node — no polygon, fall back to bounding box
+          const bbox = place.boundingbox;
+          const minLat = parseFloat(bbox[0]), maxLat = parseFloat(bbox[1]);
+          const minLng = parseFloat(bbox[2]), maxLng = parseFloat(bbox[3]);
+          locationPolygon = [
+            [minLat, minLng], [maxLat, minLng],
+            [maxLat, maxLng], [minLat, maxLng]
+          ];
+          statusEl.textContent = `${displayName} (approx.)`;
+          statusEl.className = 'location-status active';
+          clearBtn.style.display = 'block';
+          renderTable();
+          return;
+        }
+
+        const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+        const overpassRes = await fetch(overpassUrl);
+        const overpassData = await overpassRes.json();
+
+        if (!overpassData.elements || !overpassData.elements.length) {
+          statusEl.textContent = 'Boundary not found.';
+          statusEl.className = 'location-status error';
+          return;
+        }
+
+        // Extract polygon coordinates
+        const element = overpassData.elements[0];
+        let coords = [];
+
+        if (osmType === 'relation') {
+          // Find the outer member
+          const outer = element.members?.find(m => m.role === 'outer' && m.geometry);
+          if (outer?.geometry) {
+            coords = outer.geometry.map(p => [p.lat, p.lon]);
+          } else if (element.members) {
+            // Fallback: use first member with geometry
+            const first = element.members.find(m => m.geometry);
+            if (first?.geometry) coords = first.geometry.map(p => [p.lat, p.lon]);
+          }
+        } else if (osmType === 'way' && element.geometry) {
+          coords = element.geometry.map(p => [p.lat, p.lon]);
+        }
+
+        if (!coords.length) {
+          statusEl.textContent = 'Could not load boundary.';
+          statusEl.className = 'location-status error';
+          return;
+        }
+
+        locationPolygon = coords;
+        statusEl.textContent = displayName;
+        statusEl.className = 'location-status active';
+        clearBtn.style.display = 'block';
+        renderTable();
+
+      } catch (err) {
+        console.error('Location filter error:', err);
+        statusEl.textContent = 'Error loading boundary.';
+        statusEl.className = 'location-status error';
+      }
+    }
+
     // Export loadApprovedRecords globally so the edit form can access it
     window.reloadTableData = async function() {
       await loadApprovedRecords();
@@ -470,7 +599,15 @@
         filtered = filtered.filter(r => 
           r.user_id && String(r.user_id).toLowerCase().includes(uploaderFilterValue) 
         ); 
-      } 
+      }
+
+      // Location polygon filter
+      if (locationPolygon) {
+        filtered = filtered.filter(r => {
+          if (typeof r.lat !== 'number' || typeof r.lng !== 'number') return false;
+          return pointInPolygon(r.lat, r.lng, locationPolygon);
+        });
+      }
  
       filtered.forEach(record => { 
         const { 
@@ -731,6 +868,30 @@
           wrapper.setAttribute('data-state', 'short'); 
         } 
       }); 
+
+      let locationDebounce = null;
+      document.getElementById('locationInput').addEventListener('input', (e) => {
+        clearTimeout(locationDebounce);
+        const val = e.target.value.trim();
+        if (!val) {
+          locationPolygon = null;
+          document.getElementById('locationStatus').textContent = '';
+          document.getElementById('locationStatus').className = 'location-status';
+          document.getElementById('locationClear').style.display = 'none';
+          renderTable();
+          return;
+        }
+        locationDebounce = setTimeout(() => fetchLocationPolygon(val), 600);
+      });
+
+      document.getElementById('locationClear').addEventListener('click', () => {
+        document.getElementById('locationInput').value = '';
+        locationPolygon = null;
+        document.getElementById('locationStatus').textContent = '';
+        document.getElementById('locationStatus').className = 'location-status';
+        document.getElementById('locationClear').style.display = 'none';
+        renderTable();
+      });
  
     }); 
   </script>
