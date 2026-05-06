@@ -60,56 +60,57 @@
  
     <div class="database-container"> 
  
-      <!-- FILTER BAR (no container box) --> 
-      <div class="filter-bar" role="region" aria-label="Database filters"> 
- 
-        <!-- Year --> 
-        <div class="year-filter"> 
-          <label for="yearRange" class="year-label"> 
-            Filter by year: <span id="rangeLabel">Before 1900</span> 
-          </label> 
-          <input type="range" id="yearRange" min="1830" max="1930" value="1900" step="1"> 
-        </div> 
- 
-        <!-- Toggles --> 
-        <div class="filter-toggles" aria-label="Filter toggles"> 
-          <label class="cb"> 
-            <input type="checkbox" id="includeUndated"> 
-            <span>Include undated</span> 
-          </label> 
- 
-          <label class="cb"> 
-            <input type="checkbox" id="nearestCheckbox"> 
-            <span>Sort by nearest to me</span> 
-          </label> 
-        </div> 
- 
-        <!-- Location filter -->
-        <div class="location-filter">
-          <div class="location-filter-input-wrap">
-            <input type="text" id="locationInput" placeholder="Filter by location…" autocomplete="off">
-            <button id="locationClear" class="location-clear" style="display:none" aria-label="Clear location filter">×</button>
+      <!-- FILTER BAR (no container box) -->
+      <div class="filter-bar" role="region" aria-label="Database filters">
+
+        <!-- Year + Include undated -->
+        <div class="year-filter">
+          <div class="year-filter-label-row">
+            <label for="yearRange" class="year-label">
+              Filter by year: <span id="rangeLabel">Before 1900</span>
+            </label>
+            <label class="cb-plain">
+              <input type="checkbox" id="includeUndated">
+              <span>Include undated</span>
+            </label>
           </div>
-          <div id="locationStatus" class="location-status"></div>
+          <input type="range" id="yearRange" min="1830" max="1930" value="1900" step="1">
         </div>
 
-        <!-- Right side: uploader + show meta --> 
-        <div class="filter-right"> 
- 
-          <div class="meta-anchor"> 
-            <label class="cb cb-meta"> 
-              <input type="checkbox" id="showMeta"> 
-              <span>Show meta</span> 
-            </label> 
- 
-            <!-- Popover-style uploader (does not affect layout) --> 
-            <div id="uploader-filter" class="uploader-filter" aria-hidden="true"> 
-              <input type="text" id="uploaderInput" placeholder="Uploader" autocomplete="off"> 
-            </div> 
-          </div> 
- 
-        </div> 
-      </div> 
+        <!-- Location filter -->
+        <div class="location-filter">
+          <div class="year-label">
+            Filter by location: <span id="locationLabel"><span class="location-label-world">World</span></span>
+          </div>
+          <div class="location-filter-input-wrap">
+            <input type="text" id="locationInput" placeholder="Enter a town, country, etc." autocomplete="off">
+            <button id="locationClear" class="location-clear" style="display:none" aria-label="Clear location filter">×</button>
+          </div>
+        </div>
+
+        <!-- Sort by nearest -->
+        <div class="filter-toggles" aria-label="Filter toggles">
+          <label class="cb">
+            <input type="checkbox" id="nearestCheckbox">
+            <span>Sort by nearest to me</span>
+          </label>
+        </div>
+
+        <!-- Right side: show meta -->
+        <div class="filter-right">
+          <div class="meta-anchor">
+            <label class="cb cb-meta">
+              <input type="checkbox" id="showMeta">
+              <span>Show meta</span>
+            </label>
+            <!-- Popover-style uploader (does not affect layout) -->
+            <div id="uploader-filter" class="uploader-filter" aria-hidden="true">
+              <input type="text" id="uploaderInput" placeholder="Uploader" autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+      </div>
  
       <!-- TABLE --> 
       <div class="table-shell"> 
@@ -175,15 +176,13 @@
 
       if (!query.trim()) {
         locationPolygon = null;
-        statusEl.textContent = '';
-        statusEl.className = 'location-status';
+        document.getElementById('locationLabel').innerHTML = '<span class="location-label-world">World</span>';
         clearBtn.style.display = 'none';
         renderTable();
         return;
       }
 
-      statusEl.textContent = 'Searching…';
-      statusEl.className = 'location-status loading';
+      document.getElementById('locationLabel').innerHTML = '<span style="color:#0078a8">Searching…</span>';
 
       try {
         // Step 1: Nominatim — get OSM relation ID
@@ -194,8 +193,7 @@
         const nominatimData = await nominatimRes.json();
 
         if (!nominatimData.length) {
-          statusEl.textContent = 'Place not found.';
-          statusEl.className = 'location-status error';
+          document.getElementById('locationLabel').innerHTML = '<span style="color:#ef4444">Place not found.</span>';
           return;
         }
 
@@ -222,8 +220,7 @@
             [minLat, minLng], [maxLat, minLng],
             [maxLat, maxLng], [minLat, maxLng]
           ];
-          statusEl.textContent = `${displayName} (approx.)`;
-          statusEl.className = 'location-status active';
+          document.getElementById('locationLabel').innerHTML = `<a href="https://www.openstreetmap.org/${osmType}/${osmId}" target="_blank" rel="noopener">${displayName}</a> <span style="color:#94a3b8;font-weight:400">(OSM ${osmType} ${osmId}, approx.)</span>`;
           clearBtn.style.display = 'block';
           renderTable();
           return;
@@ -234,8 +231,7 @@
         const overpassData = await overpassRes.json();
 
         if (!overpassData.elements || !overpassData.elements.length) {
-          statusEl.textContent = 'Boundary not found.';
-          statusEl.className = 'location-status error';
+          document.getElementById('locationLabel').innerHTML = '<span style="color:#ef4444">Boundary not found.</span>';
           return;
         }
 
@@ -257,15 +253,13 @@
         }
 
         if (!coords.length) {
-          statusEl.textContent = 'Could not load boundary.';
-          statusEl.className = 'location-status error';
+          document.getElementById('locationLabel').innerHTML = '<span style="color:#ef4444">Could not load boundary.</span>';
           return;
         }
 
         locationPolygon = coords;
         window._debugPolygon = coords;
-        statusEl.textContent = displayName;
-        statusEl.className = 'location-status active';
+        document.getElementById('locationLabel').innerHTML = `<a href="https://www.openstreetmap.org/${osmType}/${osmId}" target="_blank" rel="noopener">${displayName}</a> <span style="color:#94a3b8;font-weight:400">(OSM ${osmType} ${osmId})</span>`;
         clearBtn.style.display = 'block';
         renderTable();
 
@@ -875,8 +869,7 @@
         const val = e.target.value.trim();
         if (!val) {
           locationPolygon = null;
-          document.getElementById('locationStatus').textContent = '';
-          document.getElementById('locationStatus').className = 'location-status';
+          document.getElementById('locationLabel').innerHTML = '<span class="location-label-world">World</span>';
           document.getElementById('locationClear').style.display = 'none';
           renderTable();
           return;
@@ -887,8 +880,7 @@
       document.getElementById('locationClear').addEventListener('click', () => {
         document.getElementById('locationInput').value = '';
         locationPolygon = null;
-        document.getElementById('locationStatus').textContent = '';
-        document.getElementById('locationStatus').className = 'location-status';
+        document.getElementById('locationLabel').innerHTML = '<span class="location-label-world">World</span>';
         document.getElementById('locationClear').style.display = 'none';
         renderTable();
       });

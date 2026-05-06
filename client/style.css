@@ -1552,22 +1552,15 @@ td.uploader-column {
    ========================= */
 
 .filter-bar {
-  /* no container box */
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 12px 14px;
-
+  gap: 12px 20px;
   margin: 14px 0 12px;
   padding: 0;
-
   background: transparent;
   border: none;
-  border-radius: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-
-  flex-wrap: wrap; /* handles zoom nicely */
+  flex-wrap: wrap;
 }
 
 /* Year stack */
@@ -1578,6 +1571,13 @@ td.uploader-column {
   flex: 0 1 360px;
 }
 
+.year-filter-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .year-label {
   margin: 0;
   font-size: 12px;
@@ -1585,6 +1585,7 @@ td.uploader-column {
   letter-spacing: 0.01em;
   color: rgba(15, 23, 42, 0.75);
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 #rangeLabel {
@@ -1598,153 +1599,55 @@ td.uploader-column {
   accent-color: auto;
 }
 
-/* Toggle cluster */
-.filter-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 12px;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-/* Unified checkbox pill (MATCH uploader height exactly) */
-.cb {
+/* Plain checkbox — no pill, no border, no background */
+.cb-plain {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-
-  height: var(--filter-pill-h);
-  box-sizing: border-box;
-
-  /* Remove vertical padding so height is real */
-  padding: 0 10px;
-
-  border-radius: 10px;
-
-  font-size: 13px;
-  font-weight: 600;
-  color: #0f172a;
-  line-height: 1;
-
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.75);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
-
-  background: rgba(248, 250, 252, 0.55);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-
-  width: auto;
-  min-width: 0;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.cb input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+.cb-plain input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
   margin: 0;
   accent-color: #0078a8;
-}
-
-.cb:hover {
-  background: rgba(248, 250, 252, 0.9);
-  border-color: rgba(0, 120, 168, 0.22);
-}
-
-.cb:focus-within {
-  box-shadow: 0 0 0 4px rgba(0, 120, 168, 0.16);
-  border-color: rgba(0, 120, 168, 0.35);
-}
-
-/* Keep meta label from wrapping */
-.cb-meta { white-space: nowrap; }
-
-/* IMPORTANT: let the right side wrap naturally when needed */
-.filter-right{
-  position: relative;         /* anchor for absolute uploader */
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  flex: 0 0 auto;
-  white-space: nowrap;        /* keeps show meta tidy */
-}
-
-/* Uploader popover: NOT in layout flow -> no reserved space -> no early wrap */
-.uploader-filter{
-  position: absolute;
-  right: calc(100% + 10px);   /* place to the LEFT of show meta */
-  top: 50%;
-  transform: translateY(-50%);
-
-  display: none;              /* truly gone when hidden */
-  z-index: 20;
-}
-
-.uploader-filter.show{
-  display: block;
-}
-
-.uploader-filter input{
-  width: var(--uploader-pill-w);
-  height: var(--filter-pill-h);
-  padding: 0 10px;
-
-  font-size: 13px;
-  font-weight: 600;
-  color: #0f172a;
-
-  border-radius: 10px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: rgba(248, 250, 252, 0.55);
-  outline: none;
-  box-sizing: border-box;
-
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-}
-
-.uploader-filter input:hover{
-  background: rgba(248, 250, 252, 0.9);
-  border-color: rgba(0, 120, 168, 0.22);
-}
-
-.uploader-filter input:focus{
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(0, 120, 168, 0.65);
-  box-shadow: 0 0 0 4px rgba(0, 120, 168, 0.15);
-}
-
-.uploader-filter input::placeholder{
-  color: rgba(15, 23, 42, 0.48);
-}
-
-/* Under heavy zoom/small widths: flip uploader BELOW the show meta pill */
-@media (max-width: 860px){
-  .filter-right{
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    white-space: normal;
-  }
-
-  .uploader-filter{
-    right: auto;
-    left: 0;
-    top: calc(100% + 8px);
-    transform: none;
-  }
-
-  .uploader-filter input{
-    width: min(var(--uploader-pill-w), 100%);
-  }
+  cursor: pointer;
 }
 
 /* Location filter */
 .location-filter {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 0 1 220px;
+  gap: 6px;
+  flex: 0 1 260px;
   min-width: 0;
+}
+
+.location-label-world {
+  font-weight: 800;
+  color: #0078a8;
+}
+
+#locationLabel {
+  font-weight: 800;
+  color: #0078a8;
+}
+
+#locationLabel a {
+  color: #0078a8;
+  text-decoration: none;
+}
+
+#locationLabel a:hover {
+  text-decoration: underline;
 }
 
 .location-filter-input-wrap {
@@ -1781,6 +1684,7 @@ td.uploader-column {
 
 .location-filter-input-wrap input::placeholder {
   color: rgba(15, 23, 42, 0.48);
+  font-weight: 400;
 }
 
 .location-clear {
@@ -1797,21 +1701,125 @@ td.uploader-column {
 
 .location-clear:hover { color: #0f172a; }
 
-.location-status {
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  min-height: 14px;
-  padding-left: 2px;
+/* Toggle cluster */
+.filter-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
-.location-status.loading { color: #0078a8; }
-.location-status.error { color: #ef4444; }
-.location-status.active { color: #16a34a; }
+/* Unified checkbox pill */
+.cb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--filter-pill-h);
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  background: rgba(248, 250, 252, 0.55);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  width: auto;
+  min-width: 0;
+}
 
-/* ===== MODAL SYSTEM (FIXES AUTO-OPEN BUG) ===== */
+.cb input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #0078a8;
+}
 
-/* Base modal layout */
+.cb:hover {
+  background: rgba(248, 250, 252, 0.9);
+  border-color: rgba(0, 120, 168, 0.22);
+}
+
+.cb:focus-within {
+  box-shadow: 0 0 0 4px rgba(0, 120, 168, 0.16);
+  border-color: rgba(0, 120, 168, 0.35);
+}
+
+.cb-meta { white-space: nowrap; }
+
+.filter-right {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Uploader popover */
+.uploader-filter {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  z-index: 20;
+}
+
+.uploader-filter.show { display: block; }
+
+.uploader-filter input {
+  width: var(--uploader-pill-w);
+  height: var(--filter-pill-h);
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(248, 250, 252, 0.55);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.uploader-filter input:hover {
+  background: rgba(248, 250, 252, 0.9);
+  border-color: rgba(0, 120, 168, 0.22);
+}
+
+.uploader-filter input:focus {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 120, 168, 0.65);
+  box-shadow: 0 0 0 4px rgba(0, 120, 168, 0.15);
+}
+
+.uploader-filter input::placeholder { color: rgba(15, 23, 42, 0.48); }
+
+@media (max-width: 860px) {
+  .filter-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .uploader-filter {
+    right: auto;
+    left: 0;
+    top: calc(100% + 8px);
+    transform: none;
+  }
+
+  .uploader-filter input { width: min(var(--uploader-pill-w), 100%); }
+}
+
+/* ===== MODAL SYSTEM ===== */
 .modal {
   position: fixed;
   inset: 0;
@@ -1821,15 +1829,8 @@ td.uploader-column {
   z-index: 2000;
 }
 
-/* Hidden by default */
-.modal-hidden {
-  display: none !important;
-}
-
-/* Visible modal */
-.modal-open {
-  display: flex !important;
-}
+.modal-hidden { display: none !important; }
+.modal-open { display: flex !important; }
 
 /* =========================
    DATABASE --- TABLE
