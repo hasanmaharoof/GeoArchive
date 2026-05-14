@@ -98,8 +98,14 @@
           </button>
         </div>
 
-        <!-- Right side: KML export + show meta -->
+        <!-- Right side: uploader filter + KML export + show meta -->
         <div class="filter-right">
+          <div id="uploader-filter" class="uploader-filter" aria-hidden="true">
+            <div class="year-filter-label-row uploader-label-row">
+              <span class="year-label">Filter by uploader: <span id="uploaderLabel" class="uploader-label-value">All</span></span>
+            </div>
+            <input type="text" id="uploaderInput" placeholder="e.g. username" autocomplete="off">
+          </div>
           <button id="kmlDownload" class="cb-plain" style="background:none;border:none;padding:0;">
             ⬇ KML
           </button>
@@ -108,10 +114,6 @@
               <input type="checkbox" id="showMeta">
               <span>Show meta</span>
             </label>
-            <!-- Popover-style uploader (does not affect layout) -->
-            <div id="uploader-filter" class="uploader-filter" aria-hidden="true">
-              <input type="text" id="uploaderInput" placeholder="Uploader" autocomplete="off">
-            </div>
           </div>
         </div>
 
@@ -654,7 +656,7 @@
       filtered.forEach(record => { 
         const { 
           id, caption, source, photographer, year, month, day, estimated, 
-          lat, lng, notes, photo_url, created_at, user_id 
+          lat, lng, notes, photo_url, created_at, user_id, location_confidence 
         } = record; 
  
         let dateStr = ''; 
@@ -693,14 +695,21 @@
           location: record.location || '',
           notes: notes || '',
           lat: lat || '',
-          lng: lng || ''
+          lng: lng || '',
+          location_confidence: record.location_confidence || ''
         }); 
  
         const safePhotographer = escapeHtml(photographer || 'N/A'); 
+        const CONFIDENCE_LABELS = { exact: 'Exact', high: '~30m', mid: '~150m', low: '~350m' };
+        const confidenceBadge = (typeof lat === 'number' && typeof lng === 'number')
+          ? (location_confidence
+              ? `<span class="confidence-badge confidence-${escapeHtml(location_confidence)}">${CONFIDENCE_LABELS[location_confidence] || escapeHtml(location_confidence)}</span>`
+              : '<span class="confidence-badge confidence-unknown">?</span>')
+          : '';
         const uploaderCell = user_id ? buildSafeUserLink(user_id) : 'N/A'; 
  
         row.innerHTML = ` 
-          <td class="col-id">[${escapeHtml(id)}]</td> 
+          <td class="col-id">${escapeHtml(id)}</td> 
           <td class="col-photo"> 
             ${safePhotoUrl 
               ? `<img src="${safePhotoUrl}" alt="Photo" 
@@ -712,7 +721,7 @@
           <td class="col-caption">${makeShowMoreCell({ kind: 'caption', rawText: caption || 'No description provided' })}</td> 
           <td class="col-source">${makeShowMoreCell({ kind: 'source', rawText: source || 'N/A' })}</td> 
           <td class="col-photographer">${safePhotographer}</td> 
-          <td class="col-coords">${coords}</td> 
+          <td class="col-coords">${coords}${confidenceBadge}</td> 
           ${metaVisible ? `<td class="notes-column">${makeShowMoreCell({ kind: 'notes', rawText: notes || '' })}</td>` : ''} 
           ${metaVisible ? `<td class="uploader-column">${uploaderCell}</td>` : ''} 
           ${metaVisible ? `<td class="uploaded-column">${escapeHtml(uploadedDate)}</td>` : ''} 
@@ -902,13 +911,18 @@
         } else { 
           uploaderFilter.classList.remove('show'); 
           uploaderFilter.setAttribute('aria-hidden', 'true'); 
-          uploaderInput.value = ""; 
+          uploaderInput.value = "";
+          const lbl = document.getElementById('uploaderLabel');
+          if (lbl) lbl.textContent = 'All';
         } 
  
         renderTable(); 
       }); 
  
-      uploaderInput?.addEventListener('input', () => { 
+      uploaderInput?.addEventListener('input', () => {
+        const val = uploaderInput.value.trim();
+        const lbl = document.getElementById('uploaderLabel');
+        if (lbl) lbl.textContent = val || 'All';
         renderTable(); 
       }); 
  
@@ -1144,6 +1158,15 @@
         <div class="checkbox-row" style="margin-top: 10px;">
           <label><input type="checkbox" name="unknownLocation" id="editUnknownLocation"> Unknown Location</label>
         </div>
+
+        <label for="editLocationConfidence">Location Confidence</label>
+        <select name="location_confidence" id="editLocationConfidence">
+          <option value="">Not set</option>
+          <option value="exact">Exact (within 5m)</option>
+          <option value="high">Within 30m (high)</option>
+          <option value="mid">Within 150m (mid)</option>
+          <option value="low">Within 350m (low)</option>
+        </select>
       </fieldset>
 
       <!-- Research Notes -->
@@ -1237,6 +1260,17 @@
     document.getElementById('editRegularSourceGroup').style.display = isStructured ? 'none' : 'block';
     document.getElementById('editStructuredSourceGroup').style.display = isStructured ? 'block' : 'none';
   });
+
+  // Disable confidence select when Unknown Location is checked
+  document.getElementById('editUnknownLocation').addEventListener('change', function() {
+    const confidenceEl = document.getElementById('editLocationConfidence');
+    if (this.checked) {
+      confidenceEl.value = '';
+      confidenceEl.disabled = true;
+    } else {
+      confidenceEl.disabled = false;
+    }
+  });
  
   // Close modal 
   editModalClose.addEventListener('click', () => {
@@ -1306,6 +1340,10 @@
     document.getElementById('editNotes').value = recordData.notes || ''; 
     document.getElementById('editLat').value = recordData.lat || ''; 
     document.getElementById('editLng').value = recordData.lng || ''; 
+    document.getElementById('editLocationConfidence').value = recordData.location_confidence || '';
+    const editConfidenceEl = document.getElementById('editLocationConfidence');
+    const hasLocation = !(!recordData.lat && !recordData.lng);
+    editConfidenceEl.disabled = !hasLocation;
     document.getElementById('editSummary').value = '';
 
     editModal.classList.remove('modal-hidden');
@@ -1465,6 +1503,8 @@
       }
     }
 
+    const location_confidence = document.getElementById('editLocationConfidence').value || null;
+
     const payload = { 
       caption,
       source,
@@ -1476,6 +1516,7 @@
       notes,
       lat: unknownLocation ? '' : lat,
       lng: unknownLocation ? '' : lng,
+      location_confidence: unknownLocation ? null : location_confidence,
       edit_summary
     }; 
  

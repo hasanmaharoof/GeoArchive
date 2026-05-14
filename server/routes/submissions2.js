@@ -7,8 +7,6 @@ const { submitRecord } = require('../controllers/submissionsController');
 const requireAdmin = require('../middleware/requireAdmin');
 const requireAuth = require('../middleware/requireAuth');
 
-const VALID_CONFIDENCE = new Set(['exact', 'high', 'mid', 'low']);
-
 // =============================================================
 // Helper: Log admin actions
 // =============================================================
@@ -68,8 +66,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
     notes,
     lat,
     lng,
-    edit_summary,
-    location_confidence,
+    edit_summary
   } = req.body;
 
   // Validate edit_summary is provided and not empty
@@ -124,9 +121,6 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
     const newEstimated = estimated ?? current.estimated;
     const newLocation = location ?? current.location;
     const newNotes = notes ?? current.notes;
-    const newConfidence = VALID_CONFIDENCE.has(location_confidence)
-      ? location_confidence
-      : current.location_confidence ?? null;
 
     // ---------------------------------------------------------
     // 3) Check if this is the FIRST edit (no revisions exist)
@@ -144,15 +138,14 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
     if (isFirstEdit) {
       // Get original uploader from submissions table
       const originalUploader = current.user_id || 'system';
-
+      
       let origInsertQuery = `
         INSERT INTO submission_revisions (
           submission_id, revision_number, editor_username, edit_summary,
           caption, source, photographer, photo_url,
-          year, month, day, estimated, location, notes, created_at,
-          location_confidence
+          year, month, day, estimated, location, notes, created_at
       `;
-
+      
       let origInsertParams = [
         id, 0, originalUploader, null,  // revision_number=0, no edit_summary for original
         current.caption,
@@ -165,8 +158,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         current.estimated,
         current.location,
         current.notes,
-        current.created_at,  // IMPORTANT: Use original submission timestamp
-        current.location_confidence ?? null,
+        current.created_at  // IMPORTANT: Use original submission timestamp
       ];
 
       // Add geom for original
@@ -177,8 +169,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
           $1,$2,$3,$4,
           $5,$6,$7,$8,
           $9,$10,$11,$12,$13,$14,$15,
-          $16,
-          $17
+          $16
         )`;
         origInsertParams.push(current.geom);
       } else {
@@ -188,7 +179,6 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
           $1,$2,$3,$4,
           $5,$6,$7,$8,
           $9,$10,$11,$12,$13,$14,$15,
-          $16,
           NULL
         )`;
       }
@@ -213,10 +203,9 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
       INSERT INTO submission_revisions (
         submission_id, revision_number, editor_username, edit_summary,
         caption, source, photographer, photo_url,
-        year, month, day, estimated, location, notes,
-        location_confidence
+        year, month, day, estimated, location, notes
     `;
-
+    
     let insertParams = [
       id, nextRevision, editor, trimmedSummary,
       newCaption,
@@ -228,8 +217,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
       newDay,
       newEstimated,
       newLocation,
-      newNotes,
-      newConfidence,
+      newNotes
     ];
 
     // Add geom column and value if coordinates exist
@@ -240,8 +228,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         $1,$2,$3,$4,
         $5,$6,$7,$8,
         $9,$10,$11,$12,$13,$14,
-        $15,
-        ST_SetSRID(ST_MakePoint($16, $17), 4326)
+        ST_SetSRID(ST_MakePoint($15, $16), 4326)
       )`;
       insertParams.push(lngNum, latNum);
     } else {
@@ -251,7 +238,6 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         $1,$2,$3,$4,
         $5,$6,$7,$8,
         $9,$10,$11,$12,$13,$14,
-        $15,
         NULL
       )`;
     }
@@ -271,8 +257,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         day = $6,
         estimated = $7,
         location = $8,
-        notes = $9,
-        location_confidence = $10
+        notes = $9
     `;
     const params = [
       newCaption,
@@ -283,12 +268,11 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
       newDay,
       newEstimated,
       newLocation,
-      newNotes,
-      newConfidence,
+      newNotes
     ];
 
     if (latNum != null && lngNum != null) {
-      updateQuery += `, geom = ST_SetSRID(ST_MakePoint($11, $12), 4326)`;
+      updateQuery += `, geom = ST_SetSRID(ST_MakePoint($10, $11), 4326)`;
       params.push(lngNum, latNum);  // ✅ CORRECT: ST_MakePoint(longitude, latitude)
     }
 
@@ -334,8 +318,7 @@ router.get('/:id/revisions', async (req, res) => {
               CASE WHEN geom IS NOT NULL THEN ST_X(geom) ELSE NULL END AS lng,
               CASE WHEN geom IS NOT NULL THEN ST_Y(geom) ELSE NULL END AS lat,
               location,
-              notes,
-              location_confidence
+              notes
        FROM submission_revisions
        WHERE submission_id = $1
        ORDER BY revision_number DESC`,
@@ -459,8 +442,7 @@ router.get('/approved', async (req, res) => {
               photo_url,
               ST_X(geom) AS lng,
               ST_Y(geom) AS lat,
-              location, notes, user_id, created_at,
-              location_confidence
+              location, notes, user_id, created_at
        FROM submissions
        WHERE status = 'approved'
          AND deleted = FALSE
@@ -506,8 +488,7 @@ router.get('/admin/pending', requireAdmin, async (req, res) => {
               photo_url, user_id,
               ST_X(geom) AS lng,
               ST_Y(geom) AS lat,
-              location, notes, created_at,
-              location_confidence
+              location, notes, created_at
        FROM submissions
        WHERE status = 'pending'
          AND deleted = FALSE

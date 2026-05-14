@@ -52,6 +52,7 @@ async function submitRecord(req, res) {
       lng,
       estimated,
       notes,
+      location_confidence,
       // user_id intentionally ignored (client-controlled)
     } = req.body;
 
@@ -67,6 +68,9 @@ async function submitRecord(req, res) {
     const sourceSafe = toTrimmedStringOrNull(source, 500);
     const photographerSafe = toTrimmedStringOrNull(photographer, 200);
     const notesSafe = toTrimmedStringOrNull(notes, 5000);
+
+    const VALID_CONFIDENCE = new Set(['exact', 'high', 'mid', 'low']);
+    const confidenceSafe = VALID_CONFIDENCE.has(location_confidence) ? location_confidence : null;
 
     if (!captionSafe || !sourceSafe) {
       return res.status(400).json({
@@ -142,10 +146,12 @@ async function submitRecord(req, res) {
       `INSERT INTO submissions (
         caption, source, photographer,
         year, month, day,
-        geom, photo_url, estimated, location, user_id, status, notes
+        geom, photo_url, estimated, location, user_id, status, notes,
+        location_confidence
       )
       VALUES ($1, $2, $3, $4, $5, $6,
-              $7, $8, $9, $10, $11, $12, $13)
+          $7, $8, $9, $10, $11, $12, $13,
+          $14)
       RETURNING *`,
       [
         captionSafe,
@@ -158,9 +164,10 @@ async function submitRecord(req, res) {
         photoUrl,
         estimatedBool,
         hasLocation,
-        userIdForDb, // ✅ username (preferred) or uid fallback
+        userIdForDb, // username (preferred) or uid fallback
         "pending",
         notesSafe,
+        confidenceSafe,
       ]
     );
 

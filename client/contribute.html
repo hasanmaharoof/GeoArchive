@@ -104,7 +104,7 @@
           rows="4"
           maxlength="400"
           required
-          placeholder="This is the public description shown in the database. Keep it about the subject of the photo."
+          placeholder="This is the public description shown in the database."
         ></textarea>
 
         <label for="photographer">Photographer (if known)</label>
@@ -199,6 +199,16 @@
           />
           <button type="button" class="sign-toggle" data-target="lng">±</button>
         </div>
+
+        <!-- Location confidence -->
+        <label for="location_confidence">Location Confidence <span class="required">*</span></label>
+        <select name="location_confidence" id="location_confidence" required>
+          <option value="" disabled selected>Select confidence level</option>
+          <option value="exact">Exact (within 5m)</option>
+          <option value="high">Within 30m (high)</option>
+          <option value="mid">Within 150m (mid)</option>
+          <option value="low">Within 350m (low)</option>
+        </select>
 
         <!-- bottom row -->
         <div class="location-bottom-row">
@@ -429,6 +439,16 @@
         }
       }
 
+      // Confidence level required when location is known
+      if (!isUnknownLocation) {
+        const confidence = document.getElementById("location_confidence").value;
+        if (!confidence) {
+          responseEl.textContent = "❌ Please select a location confidence level.";
+          responseEl.style.color = "red";
+          return;
+        }
+      }
+
       // Handle source formatting (STORE PLAIN TEXT — avoid stored XSS)
       const sourceType = document.getElementById("source-type").value;
       let finalSource = "";
@@ -602,6 +622,7 @@
 
       const lat = document.getElementById("lat");
       const lng = document.getElementById("lng");
+      const confidence = document.getElementById("location_confidence");
 
       if (isUnknown) {
         lat.disabled = true;
@@ -610,11 +631,16 @@
         lng.required = false;
         lat.value = "";
         lng.value = "";
+        confidence.disabled = true;
+        confidence.required = false;
+        confidence.value = "";
       } else {
         lat.disabled = false;
         lng.disabled = false;
         lat.required = true;
         lng.required = true;
+        confidence.disabled = false;
+        confidence.required = true;
       }
     });
   </script>
