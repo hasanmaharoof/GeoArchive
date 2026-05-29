@@ -225,8 +225,7 @@ function renderMarkers() {
       photo_url,
       lat,
       lng,
-      location,
-      location_confidence
+      location
     } = submission;
 
     const y = normalizeYear(year);
@@ -276,19 +275,6 @@ function renderMarkers() {
 
     // Create popup HTML
     const safePhoto = photo_url ? String(photo_url) : '';
-
-    // Confidence badge
-    const CONF = {
-      exact: { label: 'Exact', bg: '#dcfce7', color: '#166534' },
-      high:  { label: '~30m',  bg: '#dbeafe', color: '#1e40af' },
-      mid:   { label: '~150m', bg: '#fef9c3', color: '#854d0e' },
-      low:   { label: '~350m', bg: '#fee2e2', color: '#991b1b' },
-    };
-    const confStyle = CONF[location_confidence];
-    const confBadge = confStyle
-      ? `<span style="display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;background:${confStyle.bg};color:${confStyle.color};letter-spacing:0.02em;">${confStyle.label}</span>`
-      : '';
-
     const popupHTML = `
       <h3>${formattedDate}</h3>
 
@@ -297,12 +283,9 @@ function renderMarkers() {
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
           <small class="source-toggle" style="cursor:pointer; color:#0078a8; user-select:none;">[source]</small>
-          <div style="display:flex;align-items:center;gap:5px;">
-            ${confBadge}
-            <small class="entry-id" style="font-size: 12px;">
-              <a href="database.html?id=${id}" style="color:#888; text-decoration:none;">[${id}]</a>
-            </small>
-          </div>
+          <small class="entry-id" style="font-size: 12px;">
+            <a href="database.html?id=${id}" style="color:#888; text-decoration:none;">[${id}]</a>
+          </small>
         </div>
 
         <div class="source-details" style="display:none;">
