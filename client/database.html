@@ -74,7 +74,7 @@
               <span>Include undated</span>
             </label>
           </div>
-          <input type="range" id="yearRange" min="1830" max="1930" value="1900" step="1">
+          <input type="range" id="yearRange" min="1830" max="1950" value="1900" step="1">
         </div>
 
         <!-- Location filter -->
@@ -466,7 +466,7 @@
       }
       
       // Sortable columns: only ID, Date, and Date Uploaded
-      const sortableColumns = ['id', 'date', 'uploaded'];
+      const sortableColumns = ['id', 'date', 'photographer', 'uploaded'];
       
       document.querySelectorAll('#records-table thead th').forEach((th, index) => {
         th.classList.remove('sort-asc', 'sort-desc', 'sort-none', 'sortable');
@@ -498,7 +498,7 @@
 
     function handleColumnSort(column) {
       // Only allow sorting on specific columns
-      const sortableColumns = ['id', 'date', 'uploaded'];
+      const sortableColumns = ['id', 'date', 'photographer', 'uploaded'];
       if (!sortableColumns.includes(column)) return;
       
       // 3-state cycle: none → asc → desc → none
@@ -557,7 +557,7 @@
           if (Number.isFinite(y)) {
             const yearRange = document.getElementById('yearRange');
             const rangeLabel = document.getElementById('rangeLabel');
-            yearRange.value = Math.min(Math.max(y, 1830), 1930);
+            yearRange.value = Math.min(Math.max(y, 1830), 1950);
             rangeLabel.textContent = y < 1900 ? `Before ${y}` : `Up to ${y}`;
           }
         }
@@ -832,8 +832,8 @@
         const includeUndated = document.getElementById('includeUndated'); 
         const rangeLabel = document.getElementById('rangeLabel'); 
  
-        yearRange.value = 1930; 
-        rangeLabel.textContent = "Up to 1930"; 
+        yearRange.value = 1950; 
+        rangeLabel.textContent = "Up to 1950"; 
  
         includeUndated.checked = true; 
  
@@ -1098,7 +1098,7 @@
         <input type="text" name="photographer" id="editPhotographer" placeholder="e.g. John Smith"> 
 
         <label>Date Taken</label>
-        <input type="number" name="year" id="editYear" min="0" max="1929" placeholder="YYYY"> 
+        <input type="number" name="year" id="editYear" min="0" max="1949" placeholder="YYYY"> 
         <input type="number" name="month" id="editMonth" min="1" max="12" placeholder="MM (optional)"> 
         <input type="number" name="day" id="editDay" min="1" max="31" placeholder="DD (optional)"> 
 
@@ -1462,8 +1462,8 @@
     // Validate year
     if (year !== '') {
       const yearNum = parseInt(year, 10);
-      if (isNaN(yearNum) || yearNum < 0 || yearNum > 1929) {
-        alert('Year must be between 0 and 1929.');
+      if (isNaN(yearNum) || yearNum < 0 || yearNum > 1949) {
+        alert('Year must be between 0 and 1949.');
         return;
       }
     }

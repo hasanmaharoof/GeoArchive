@@ -993,7 +993,7 @@ body.about .aboutcontent {
 }
 
 /* =========================
-   ADMIN
+   ~ADMIN
    ========================= */
 
 body.admin {
@@ -1249,7 +1249,7 @@ img.admin {
 }
 
 /* =========================
-   MAP
+   ~MAP
    ========================= */
 
 body.map {
@@ -1463,7 +1463,7 @@ input[type="checkbox"]:hover {
 }
 
 /* =========================
-   DATABASE
+   ~DATABASE
    ========================= */
 
 /* Main content grows to push footer down */
@@ -2156,6 +2156,7 @@ td.uploader-column {
 #records-table td:nth-child(6) {
   width: var(--col-photographer) !important;
   max-width: var(--col-photographer) !important;
+  white-space: nowrap;
 }
 
 #records-table th:nth-child(7),

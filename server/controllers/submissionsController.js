@@ -91,7 +91,7 @@ async function submitRecord(req, res) {
     const estimatedBool = toBool(estimated);
 
     // Minimal date sanity checks
-    if (yearInt !== null && (yearInt < 0 || yearInt > 3000)) {
+    if (yearInt !== null && (yearInt < 0 || yearInt > 1949)) {
       return res.status(400).json({ error: "Invalid year" });
     }
     if (monthInt !== null && (monthInt < 1 || monthInt > 12)) {

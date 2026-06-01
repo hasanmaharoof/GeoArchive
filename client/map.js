@@ -166,6 +166,7 @@ const markerIcons = {
   '1910s': new LeafIcon({ iconUrl: 'markers/1910s.png' }),
   '1920s': new LeafIcon({ iconUrl: 'markers/1920s.png' }),
   '1930s': new LeafIcon({ iconUrl: 'markers/1930s.png' }),
+  '1940s': new LeafIcon({ iconUrl: 'markers/1940s.png' }),
   'undated': new LeafIcon({ iconUrl: 'markers/unknown.png' }),
 };
 
@@ -260,7 +261,8 @@ function renderMarkers() {
     else if (y < 1910) icon = markerIcons['1900s'];
     else if (y < 1920) icon = markerIcons['1910s'];
     else if (y < 1930) icon = markerIcons['1920s'];
-    else icon = markerIcons['1930s'];
+    else if (y < 1940) icon = markerIcons['1930s'];
+    else icon = markerIcons['1940s'];
 
     // Build formatted date
     let dateStr = '';
