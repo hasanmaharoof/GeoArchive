@@ -329,19 +329,21 @@ function renderMarkers() {
     marker.bindPopup(popupHTML, { maxWidth: 280 });
     markerLayer.addLayer(marker);
 
-    // Directional indicator: small arrow overlay showing camera heading
+    // Directional indicator: small arrow overlay showing camera heading.
+    // The rotation pivot is anchored a few px up and left of the marker's
+    // exact tip (rather than directly on it), so it sits beside the pin's
+    // body instead of below its visible shape.
     if (hasDirection) {
       const directionIcon = L.divIcon({
         className: 'direction-arrow-icon',
-        // Offset anchor so the arrow sits beside the marker pin's tip rather than on top of it
         html: `<div class="direction-arrow" style="transform: rotate(${direction}deg);"></div>`,
-        iconSize: [18, 18],
-        iconAnchor: [-4, 30],
+        iconSize: [20, 20],
+        iconAnchor: [15, 17],
       });
       const directionMarker = L.marker([lat, lng], {
         icon: directionIcon,
         interactive: false,
-        zIndexOffset: -10,
+        zIndexOffset: 50, // render above the pin so it's never hidden behind it
         keyboard: false,
       });
       markerLayer.addLayer(directionMarker);

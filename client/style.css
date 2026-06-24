@@ -1421,16 +1421,26 @@ body.map {
 
 /* --- DIRECTION (CAMERA HEADING) MARKER OVERLAY --- */
 .direction-arrow-icon {
+  position: relative;
   pointer-events: none;
 }
 
+/* Positioned so its rotation pivot (bottom-center of the triangle) sits
+   exactly at the icon box's center, which is anchored to the marker's tip
+   in map.js. Rotating then points the apex outward from the pin's tip
+   in the camera's compass heading (0deg = up/North). */
 .direction-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -5px;
+  margin-top: -12px;
   width: 0;
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 9px solid #0078a8;
-  transform-origin: center 80%;
+  border-bottom: 12px solid #0078a8;
+  transform-origin: 50% 100%;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
