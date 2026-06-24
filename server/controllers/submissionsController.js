@@ -26,6 +26,12 @@ function toFloatOrNull(v) {
   return Number.isFinite(n) ? n : null;
 }
 
+function toDirectionOrNull(v) {
+  if (v === undefined || v === null || v === "") return null;
+  const n = Number.parseInt(String(v), 10);
+  return Number.isFinite(n) && n >= 0 && n <= 359 ? n : null;
+}
+
 async function submitRecord(req, res) {
   try {
     // requireAuth should have set req.user
@@ -53,6 +59,7 @@ async function submitRecord(req, res) {
       estimated,
       notes,
       location_confidence,
+      direction,
       // user_id intentionally ignored (client-controlled)
     } = req.body;
 
@@ -71,6 +78,12 @@ async function submitRecord(req, res) {
 
     const VALID_CONFIDENCE = new Set(['exact', 'high', 'mid', 'low']);
     const confidenceSafe = VALID_CONFIDENCE.has(location_confidence) ? location_confidence : null;
+
+    // Direction (camera heading) is optional, but if provided must be a valid 0-359 bearing
+    const directionSafe = toDirectionOrNull(direction);
+    if (direction !== undefined && direction !== null && direction !== "" && directionSafe === null) {
+      return res.status(400).json({ error: "Invalid direction (must be an integer 0-359)" });
+    }
 
     if (!captionSafe || !sourceSafe) {
       return res.status(400).json({
@@ -147,11 +160,11 @@ async function submitRecord(req, res) {
         caption, source, photographer,
         year, month, day,
         geom, photo_url, estimated, location, user_id, status, notes,
-        location_confidence
+        location_confidence, direction
       )
       VALUES ($1, $2, $3, $4, $5, $6,
           $7, $8, $9, $10, $11, $12, $13,
-          $14)
+          $14, $15)
       RETURNING *`,
       [
         captionSafe,
@@ -168,6 +181,7 @@ async function submitRecord(req, res) {
         "pending",
         notesSafe,
         confidenceSafe,
+        directionSafe,
       ]
     );
 

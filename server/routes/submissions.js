@@ -70,6 +70,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
     lng,
     edit_summary,
     location_confidence,
+    direction,
   } = req.body;
 
   // Validate edit_summary is provided and not empty
@@ -81,6 +82,15 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
   const trimmedSummary = edit_summary.trim();
   if (trimmedSummary.length > 500) {
     return res.status(400).json({ error: 'Edit summary must be 500 characters or less' });
+  }
+
+  // Direction (camera heading) is optional, but if provided must be a valid 0-359 bearing
+  let directionNum = null;
+  if (direction !== undefined && direction !== null && direction !== '') {
+    directionNum = Number.parseInt(direction, 10);
+    if (!Number.isInteger(directionNum) || directionNum < 0 || directionNum > 359) {
+      return res.status(400).json({ error: 'Invalid direction (must be an integer 0-359)' });
+    }
   }
 
   const client = await db.pool.connect();
@@ -127,6 +137,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
     const newConfidence = VALID_CONFIDENCE.has(location_confidence)
       ? location_confidence
       : current.location_confidence ?? null;
+    const newDirection = directionNum ?? current.direction;
 
     // ---------------------------------------------------------
     // 3) Check if this is the FIRST edit (no revisions exist)
@@ -150,7 +161,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
           submission_id, revision_number, editor_username, edit_summary,
           caption, source, photographer, photo_url,
           year, month, day, estimated, location, notes, created_at,
-          location_confidence
+          location_confidence, direction
       `;
 
       let origInsertParams = [
@@ -167,6 +178,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         current.notes,
         current.created_at,  // IMPORTANT: Use original submission timestamp
         current.location_confidence ?? null,
+        current.direction ?? null,
       ];
 
       // Add geom for original
@@ -177,8 +189,8 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
           $1,$2,$3,$4,
           $5,$6,$7,$8,
           $9,$10,$11,$12,$13,$14,$15,
-          $16,
-          $17
+          $16,$17,
+          $18
         )`;
         origInsertParams.push(current.geom);
       } else {
@@ -188,7 +200,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
           $1,$2,$3,$4,
           $5,$6,$7,$8,
           $9,$10,$11,$12,$13,$14,$15,
-          $16,
+          $16,$17,
           NULL
         )`;
       }
@@ -214,7 +226,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         submission_id, revision_number, editor_username, edit_summary,
         caption, source, photographer, photo_url,
         year, month, day, estimated, location, notes,
-        location_confidence
+        location_confidence, direction
     `;
 
     let insertParams = [
@@ -230,6 +242,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
       newLocation,
       newNotes,
       newConfidence,
+      newDirection,
     ];
 
     // Add geom column and value if coordinates exist
@@ -240,8 +253,8 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         $1,$2,$3,$4,
         $5,$6,$7,$8,
         $9,$10,$11,$12,$13,$14,
-        $15,
-        ST_SetSRID(ST_MakePoint($16, $17), 4326)
+        $15,$16,
+        ST_SetSRID(ST_MakePoint($17, $18), 4326)
       )`;
       insertParams.push(lngNum, latNum);
     } else {
@@ -251,7 +264,7 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         $1,$2,$3,$4,
         $5,$6,$7,$8,
         $9,$10,$11,$12,$13,$14,
-        $15,
+        $15,$16,
         NULL
       )`;
     }
@@ -272,7 +285,8 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
         estimated = $7,
         location = $8,
         notes = $9,
-        location_confidence = $10
+        location_confidence = $10,
+        direction = $11
     `;
     const params = [
       newCaption,
@@ -285,10 +299,11 @@ router.post('/:id/edit', requireAuth, async (req, res) => {
       newLocation,
       newNotes,
       newConfidence,
+      newDirection,
     ];
 
     if (latNum != null && lngNum != null) {
-      updateQuery += `, geom = ST_SetSRID(ST_MakePoint($11, $12), 4326)`;
+      updateQuery += `, geom = ST_SetSRID(ST_MakePoint($12, $13), 4326)`;
       params.push(lngNum, latNum);  // ✅ CORRECT: ST_MakePoint(longitude, latitude)
     }
 
@@ -335,7 +350,8 @@ router.get('/:id/revisions', async (req, res) => {
               CASE WHEN geom IS NOT NULL THEN ST_Y(geom) ELSE NULL END AS lat,
               location,
               notes,
-              location_confidence
+              location_confidence,
+              direction
        FROM submission_revisions
        WHERE submission_id = $1
        ORDER BY revision_number DESC`,
@@ -460,7 +476,7 @@ router.get('/approved', async (req, res) => {
               ST_X(geom) AS lng,
               ST_Y(geom) AS lat,
               location, notes, user_id, created_at,
-              location_confidence
+              location_confidence, direction
        FROM submissions
        WHERE status = 'approved'
          AND deleted = FALSE
@@ -507,7 +523,7 @@ router.get('/admin/pending', requireAdmin, async (req, res) => {
               ST_X(geom) AS lng,
               ST_Y(geom) AS lat,
               location, notes, created_at,
-              location_confidence
+              location_confidence, direction
        FROM submissions
        WHERE status = 'pending'
          AND deleted = FALSE

@@ -220,6 +220,23 @@
             How to get coordinates
           </a>
         </div>
+
+        <!-- Camera direction (optional) -->
+        <label for="compassDial">Camera Direction (optional)</label>
+        <div class="compass-widget">
+          <div class="compass-dial" id="compassDial">
+            <span class="compass-tick compass-tick-n">N</span>
+            <span class="compass-tick compass-tick-e">E</span>
+            <span class="compass-tick compass-tick-s">S</span>
+            <span class="compass-tick compass-tick-w">W</span>
+            <div class="compass-needle" id="compassNeedle"></div>
+          </div>
+          <div class="compass-readout-row">
+            <span class="compass-readout" id="compassReadout">Not set</span>
+            <button type="button" class="compass-clear" id="compassClear">Clear</button>
+          </div>
+        </div>
+        <input type="hidden" name="direction" id="direction" />
       </fieldset>
 
       <!-- NOTES FIELDSET -->
@@ -385,6 +402,62 @@
     if (captionEl) captionEl.setAttribute("maxlength", "400");
     if (notesEl) notesEl.setAttribute("maxlength", "900");
 
+    // Compass dial — drag to set the camera direction (0-359°, 0 = North/up)
+    const compassDial = document.getElementById("compassDial");
+    const compassNeedle = document.getElementById("compassNeedle");
+    const compassReadout = document.getElementById("compassReadout");
+    const compassClear = document.getElementById("compassClear");
+    const directionInput = document.getElementById("direction");
+
+    function setCompassDirection(deg) {
+      const rounded = ((Math.round(deg) % 360) + 360) % 360;
+      directionInput.value = String(rounded);
+      compassNeedle.style.transform = `rotate(${rounded}deg)`;
+      compassReadout.textContent = `${rounded}°`;
+    }
+
+    function clearCompassDirection() {
+      directionInput.value = "";
+      compassNeedle.style.transform = "rotate(0deg)";
+      compassReadout.textContent = "Not set";
+    }
+
+    function angleFromPointer(clientX, clientY) {
+      const rect = compassDial.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+      // 0deg = up/North, increasing clockwise
+      return (Math.atan2(dx, -dy) * 180) / Math.PI;
+    }
+
+    let draggingCompass = false;
+
+    function onCompassPointerMove(e) {
+      if (!draggingCompass) return;
+      setCompassDirection(angleFromPointer(e.clientX, e.clientY));
+    }
+
+    function onCompassPointerUp() {
+      draggingCompass = false;
+      document.removeEventListener("pointermove", onCompassPointerMove);
+      document.removeEventListener("pointerup", onCompassPointerUp);
+    }
+
+    if (compassDial) {
+      compassDial.addEventListener("pointerdown", (e) => {
+        draggingCompass = true;
+        setCompassDirection(angleFromPointer(e.clientX, e.clientY));
+        document.addEventListener("pointermove", onCompassPointerMove);
+        document.addEventListener("pointerup", onCompassPointerUp);
+      });
+    }
+
+    if (compassClear) {
+      compassClear.addEventListener("click", () => clearCompassDirection());
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       responseEl.textContent = "";
@@ -444,6 +517,17 @@
         const confidence = document.getElementById("location_confidence").value;
         if (!confidence) {
           responseEl.textContent = "❌ Please select a location confidence level.";
+          responseEl.style.color = "red";
+          return;
+        }
+      }
+
+      // Camera direction is optional, but if set must be a valid 0-359 bearing
+      const directionVal = directionInput.value.trim();
+      if (directionVal !== "") {
+        const directionNum = Number(directionVal);
+        if (!Number.isInteger(directionNum) || directionNum < 0 || directionNum > 359) {
+          responseEl.textContent = "❌ Camera direction must be between 0 and 359 degrees.";
           responseEl.style.color = "red";
           return;
         }

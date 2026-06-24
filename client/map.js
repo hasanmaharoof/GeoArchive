@@ -227,7 +227,8 @@ function renderMarkers() {
       lat,
       lng,
       location,
-      location_confidence
+      location_confidence,
+      direction
     } = submission;
 
     const y = normalizeYear(year);
@@ -291,6 +292,12 @@ function renderMarkers() {
       ? `<span style="display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;background:${confStyle.bg};color:${confStyle.color};letter-spacing:0.02em;">${confStyle.label}</span>`
       : '';
 
+    // Direction badge (camera heading)
+    const hasDirection = typeof direction === 'number' && direction >= 0 && direction <= 359;
+    const directionBadge = hasDirection
+      ? `<span class="direction-badge"><span class="direction-badge-arrow" style="transform: rotate(${direction}deg);"></span>${direction}°</span>`
+      : '';
+
     const popupHTML = `
       <h3>${formattedDate}</h3>
 
@@ -300,6 +307,7 @@ function renderMarkers() {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
           <small class="source-toggle" style="cursor:pointer; color:#0078a8; user-select:none;">[source]</small>
           <div style="display:flex;align-items:center;gap:5px;">
+            ${directionBadge}
             ${confBadge}
             <small class="entry-id" style="font-size: 12px;">
               <a href="database.html?id=${id}" style="color:#888; text-decoration:none;">[${id}]</a>
@@ -320,6 +328,24 @@ function renderMarkers() {
     const marker = L.marker([lat, lng], { icon });
     marker.bindPopup(popupHTML, { maxWidth: 280 });
     markerLayer.addLayer(marker);
+
+    // Directional indicator: small arrow overlay showing camera heading
+    if (hasDirection) {
+      const directionIcon = L.divIcon({
+        className: 'direction-arrow-icon',
+        // Offset anchor so the arrow sits beside the marker pin's tip rather than on top of it
+        html: `<div class="direction-arrow" style="transform: rotate(${direction}deg);"></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [-4, 30],
+      });
+      const directionMarker = L.marker([lat, lng], {
+        icon: directionIcon,
+        interactive: false,
+        zIndexOffset: -10,
+        keyboard: false,
+      });
+      markerLayer.addLayer(directionMarker);
+    }
 
     // If matches query param, pan and open popup (ONLY ONCE)
     if (

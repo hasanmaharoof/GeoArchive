@@ -654,10 +654,10 @@
       currentFilteredRecords = filtered;
  
       filtered.forEach(record => { 
-        const { 
-          id, caption, source, photographer, year, month, day, estimated, 
-          lat, lng, notes, photo_url, created_at, user_id, location_confidence 
-        } = record; 
+        const {
+          id, caption, source, photographer, year, month, day, estimated,
+          lat, lng, notes, photo_url, created_at, user_id, location_confidence, direction
+        } = record;
  
         let dateStr = ''; 
         if (year) { 
@@ -672,13 +672,17 @@
  
         const uploadedDate = created_at ? new Date(created_at).toLocaleString() : 'N/A'; 
  
-        const coords = (typeof lat === 'number' && typeof lng === 'number') 
-          ? (() => { 
-              const base = `map.html?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&id=${encodeURIComponent(id)}`; 
-              const withYear = year ? `${base}&year=${encodeURIComponent(year)}` : base; 
-              return `<a href="${withYear}" style="color: inherit; text-decoration: underline;">${lat.toFixed(5)}, ${lng.toFixed(5)}</a>`; 
-            })() 
-          : 'N/A'; 
+        const directionDisplay = (typeof direction === 'number' && direction >= 0 && direction <= 359)
+          ? `<div class="direction-display"><span class="direction-arrow-small" style="transform: rotate(${direction}deg);"></span><span class="direction-deg">${direction}°</span></div>`
+          : '';
+
+        const coords = (typeof lat === 'number' && typeof lng === 'number')
+          ? (() => {
+              const base = `map.html?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&id=${encodeURIComponent(id)}`;
+              const withYear = year ? `${base}&year=${encodeURIComponent(year)}` : base;
+              return `<a href="${withYear}" style="color: inherit; text-decoration: underline;">${lat.toFixed(5)}, ${lng.toFixed(5)}</a>${directionDisplay}`;
+            })()
+          : 'N/A';
  
         const safePhotoUrl = (photo_url && isSafeHttpUrl(photo_url)) ? photo_url : ''; 
         const row = document.createElement('tr'); 
@@ -696,8 +700,9 @@
           notes: notes || '',
           lat: lat || '',
           lng: lng || '',
-          location_confidence: record.location_confidence || ''
-        }); 
+          location_confidence: record.location_confidence || '',
+          direction: typeof direction === 'number' ? direction : ''
+        });
  
         const safePhotographer = escapeHtml(photographer || 'N/A'); 
         const CONFIDENCE_LABELS = { exact: 'Exact', high: '~30m', mid: '~150m', low: '~350m' };
@@ -1166,6 +1171,23 @@
           <option value="mid">Within 150m (mid)</option>
           <option value="low">Within 350m (low)</option>
         </select>
+
+        <!-- Camera direction (optional) -->
+        <label for="editCompassDial">Camera Direction (optional)</label>
+        <div class="compass-widget">
+          <div class="compass-dial" id="editCompassDial">
+            <span class="compass-tick compass-tick-n">N</span>
+            <span class="compass-tick compass-tick-e">E</span>
+            <span class="compass-tick compass-tick-s">S</span>
+            <span class="compass-tick compass-tick-w">W</span>
+            <div class="compass-needle" id="editCompassNeedle"></div>
+          </div>
+          <div class="compass-readout-row">
+            <span class="compass-readout" id="editCompassReadout">Not set</span>
+            <button type="button" class="compass-clear" id="editCompassClear">Clear</button>
+          </div>
+        </div>
+        <input type="hidden" name="direction" id="editDirection">
       </fieldset>
 
       <!-- Research Notes -->
@@ -1260,6 +1282,61 @@
     document.getElementById('editStructuredSourceGroup').style.display = isStructured ? 'block' : 'none';
   });
 
+  // Compass dial — drag to set the camera direction (0-359°, 0 = North/up)
+  const editCompassDial = document.getElementById('editCompassDial');
+  const editCompassNeedle = document.getElementById('editCompassNeedle');
+  const editCompassReadout = document.getElementById('editCompassReadout');
+  const editCompassClear = document.getElementById('editCompassClear');
+  const editDirectionInput = document.getElementById('editDirection');
+
+  function setEditCompassDirection(deg) {
+    const rounded = ((Math.round(deg) % 360) + 360) % 360;
+    editDirectionInput.value = String(rounded);
+    editCompassNeedle.style.transform = `rotate(${rounded}deg)`;
+    editCompassReadout.textContent = `${rounded}°`;
+  }
+
+  function clearEditCompassDirection() {
+    editDirectionInput.value = '';
+    editCompassNeedle.style.transform = 'rotate(0deg)';
+    editCompassReadout.textContent = 'Not set';
+  }
+
+  function editAngleFromPointer(clientX, clientY) {
+    const rect = editCompassDial.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = clientX - centerX;
+    const dy = clientY - centerY;
+    return (Math.atan2(dx, -dy) * 180) / Math.PI;
+  }
+
+  let draggingEditCompass = false;
+
+  function onEditCompassPointerMove(e) {
+    if (!draggingEditCompass) return;
+    setEditCompassDirection(editAngleFromPointer(e.clientX, e.clientY));
+  }
+
+  function onEditCompassPointerUp() {
+    draggingEditCompass = false;
+    document.removeEventListener('pointermove', onEditCompassPointerMove);
+    document.removeEventListener('pointerup', onEditCompassPointerUp);
+  }
+
+  if (editCompassDial) {
+    editCompassDial.addEventListener('pointerdown', e => {
+      draggingEditCompass = true;
+      setEditCompassDirection(editAngleFromPointer(e.clientX, e.clientY));
+      document.addEventListener('pointermove', onEditCompassPointerMove);
+      document.addEventListener('pointerup', onEditCompassPointerUp);
+    });
+  }
+
+  if (editCompassClear) {
+    editCompassClear.addEventListener('click', () => clearEditCompassDirection());
+  }
+
   // Disable confidence select when Unknown Location is checked
   document.getElementById('editUnknownLocation').addEventListener('change', function() {
     const confidenceEl = document.getElementById('editLocationConfidence');
@@ -1344,6 +1421,12 @@
     const hasLocation = !(!recordData.lat && !recordData.lng);
     editConfidenceEl.disabled = !hasLocation;
     document.getElementById('editSummary').value = '';
+
+    if (typeof recordData.direction === 'number') {
+      setEditCompassDirection(recordData.direction);
+    } else {
+      clearEditCompassDirection();
+    }
 
     editModal.classList.remove('modal-hidden');
     editModal.classList.add('modal-open');
@@ -1504,7 +1587,16 @@
 
     const location_confidence = document.getElementById('editLocationConfidence').value || null;
 
-    const payload = { 
+    const directionVal = editDirectionInput.value.trim();
+    if (directionVal !== '') {
+      const directionNum = Number(directionVal);
+      if (!Number.isInteger(directionNum) || directionNum < 0 || directionNum > 359) {
+        alert('Camera direction must be between 0 and 359 degrees.');
+        return;
+      }
+    }
+
+    const payload = {
       caption,
       source,
       photographer,
@@ -1516,8 +1608,9 @@
       lat: unknownLocation ? '' : lat,
       lng: unknownLocation ? '' : lng,
       location_confidence: unknownLocation ? null : location_confidence,
+      direction: directionVal === '' ? null : directionVal,
       edit_summary
-    }; 
+    };
  
     console.log('Submitting edit for record:', id);
     console.log('Payload:', payload);
@@ -1640,6 +1733,10 @@
     return c ? (CONFIDENCE_LABELS_HISTORY[c] || c) : 'Not set';
   }
 
+  function formatDirection(d) {
+    return (typeof d === 'number' && d >= 0 && d <= 359) ? `${d}°` : 'Not set';
+  }
+
   function buildSafeUserLink(username) {
     // Validate username format
     const u = String(username ?? '');
@@ -1713,8 +1810,8 @@
     }
 
     // If we have a previous revision, show diffs. Otherwise show plain values
-    let captionHtml, sourceHtml, photographerHtml, dateHtml, coordsHtml, notesHtml, confidenceHtml;
-    
+    let captionHtml, sourceHtml, photographerHtml, dateHtml, coordsHtml, notesHtml, confidenceHtml, directionHtml;
+
     if (previousRevision) {
       captionHtml = compareValues(previousRevision.caption, revision.caption);
       sourceHtml = compareValues(previousRevision.source, revision.source);
@@ -1730,6 +1827,7 @@
       
       notesHtml = compareValues(previousRevision.notes, revision.notes);
       confidenceHtml = compareValues(formatConfidence(previousRevision.location_confidence), formatConfidence(revision.location_confidence));
+      directionHtml = compareValues(formatDirection(previousRevision.direction), formatDirection(revision.direction));
     } else {
       // No previous revision - just show current values
       captionHtml = escapeHtml(revision.caption || 'N/A');
@@ -1739,6 +1837,7 @@
       coordsHtml = coords;
       notesHtml = escapeHtml(revision.notes || '');
       confidenceHtml = escapeHtml(formatConfidence(revision.location_confidence));
+      directionHtml = escapeHtml(formatDirection(revision.direction));
     }
 
     return `
@@ -1786,6 +1885,11 @@
           <div class="history-field">
             <span class="history-field-label">Confidence:</span>
             <span class="history-field-value">${confidenceHtml}</span>
+          </div>
+
+          <div class="history-field">
+            <span class="history-field-label">Camera Direction:</span>
+            <span class="history-field-value">${directionHtml}</span>
           </div>
 
           ${revision.notes || (previousRevision && previousRevision.notes) ? `
@@ -1883,13 +1987,15 @@
           lat: currentRecord.lat,
           lng: currentRecord.lng,
           notes: currentRecord.notes,
-          location_confidence: currentRecord.location_confidence || null
+          location_confidence: currentRecord.location_confidence || null,
+          direction: typeof currentRecord.direction === 'number' ? currentRecord.direction : null
         };
         
-        // ALWAYS compare current with the original (revision_number=0)
-        // Find revision 0 (original state)
-        const originalRevision = revisions.find(r => r.revision_number === 0);
-        html += buildRevisionCard(currentData, false, true, originalRevision);
+        // Compare current state with the revision immediately before the latest edit,
+        // so the "Current Version" card shows only what the latest edit actually changed
+        // (not the cumulative diff back to the original submission).
+        const previousRevisionForCurrent = revisions.length > 1 ? revisions[1] : null;
+        html += buildRevisionCard(currentData, false, true, previousRevisionForCurrent);
       }
 
       // 2. Historical revisions (each shows state AFTER that edit)
