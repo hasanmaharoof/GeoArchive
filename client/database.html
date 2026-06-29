@@ -1607,8 +1607,60 @@
     });
   });
 
+  async function applyTagByName(name) {
+    name = name.trim();
+    if (!name) return;
+    const msg = document.getElementById('editTagMsg');
+    const user = auth.currentUser;
+    if (!user) { if (msg) msg.textContent = 'You must be logged in to add tags.'; return; }
+
+    // Load tags cache if empty
+    if (allTagsCache.length === 0) await loadAllTags();
+
+    // Look for exact match (case-insensitive)
+    const existing = allTagsCache.find(t => t.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      if (currentEditRecordTags.find(t => t.id === existing.id)) {
+        if (msg) msg.textContent = 'Tag already on this record.';
+        return;
+      }
+      await addTagToRecord(existing.id, existing.name, existing.slug);
+    } else {
+      // Create new tag then apply it
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch(`${API_BASE_URL}/api/tags`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allTagsCache.push({ ...data, record_count: 0 });
+          await addTagToRecord(data.id, data.name, data.slug);
+        } else {
+          if (msg) msg.textContent = data.error || 'Failed to create tag.';
+          return;
+        }
+      } catch {
+        if (msg) msg.textContent = 'Network error.';
+        return;
+      }
+    }
+    tagInput.value = '';
+    tagSuggestions.style.display = 'none';
+  }
+
   document.getElementById('editTagAddBtn')?.addEventListener('click', () => {
-    tagInput.dispatchEvent(new Event('input'));
+    applyTagByName(tagInput.value);
+  });
+
+  tagInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyTagByName(tagInput.value);
+    }
   });
 
   document.addEventListener('click', e => {
