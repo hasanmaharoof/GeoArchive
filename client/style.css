@@ -1666,6 +1666,23 @@ td.uploader-column {
   display: table-cell;
 }
 
+.meta-visible th.uploader-column,
+.meta-visible td.uploader-column {
+  width: 90px;
+  max-width: 90px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta-visible th.uploaded-column,
+.meta-visible td.uploaded-column {
+  width: 110px;
+  max-width: 110px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
 /* Wider database layout */
 .databasecontent {
   margin: 16px 6px 24px;   /* much smaller side margins */
