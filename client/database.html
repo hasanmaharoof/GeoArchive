@@ -1290,7 +1290,11 @@
   const editDirectionInput = document.getElementById('editDirection');
 
   function setEditCompassDirection(deg) {
-    const rounded = ((Math.round(deg) % 360) + 360) % 360;
+    let rounded = ((Math.round(deg) % 360) + 360) % 360;
+    // Snap to cardinal directions when within 5°
+    for (const cardinal of [0, 90, 180, 270, 360]) {
+      if (Math.abs(rounded - cardinal) <= 5) { rounded = cardinal % 360; break; }
+    }
     editDirectionInput.value = String(rounded);
     editCompassNeedle.style.transform = `rotate(${rounded}deg)`;
     editCompassReadout.textContent = `${rounded}°`;

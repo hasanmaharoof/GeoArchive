@@ -410,7 +410,11 @@
     const directionInput = document.getElementById("direction");
 
     function setCompassDirection(deg) {
-      const rounded = ((Math.round(deg) % 360) + 360) % 360;
+      let rounded = ((Math.round(deg) % 360) + 360) % 360;
+      // Snap to cardinal directions when within 5°
+      for (const cardinal of [0, 90, 180, 270, 360]) {
+        if (Math.abs(rounded - cardinal) <= 5) { rounded = cardinal % 360; break; }
+      }
       directionInput.value = String(rounded);
       compassNeedle.style.transform = `rotate(${rounded}deg)`;
       compassReadout.textContent = `${rounded}°`;
