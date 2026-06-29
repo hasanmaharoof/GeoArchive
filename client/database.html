@@ -100,7 +100,7 @@
 
         <!-- Right side: tag filter + uploader filter + KML export + show meta -->
         <div class="filter-right">
-          <div class="tag-filter-group">
+          <div class="tag-filter-group uploader-filter" id="tag-filter" aria-hidden="true">
             <span class="year-label">Filter by tag: <span id="tagFilterLabel" class="uploader-label-value">All</span></span>
             <select id="tagFilter">
               <option value="">All tags</option>
@@ -944,15 +944,26 @@
       showMetaCheckbox.addEventListener('change', () => { 
         const visible = showMetaCheckbox.checked; 
  
-        if (visible) { 
-          uploaderFilter.classList.add('show'); 
-          uploaderFilter.setAttribute('aria-hidden', 'false'); 
-        } else { 
-          uploaderFilter.classList.remove('show'); 
-          uploaderFilter.setAttribute('aria-hidden', 'true'); 
+        const tagFilterEl = document.getElementById('tag-filter');
+        if (visible) {
+          uploaderFilter.classList.add('show');
+          uploaderFilter.setAttribute('aria-hidden', 'false');
+          tagFilterEl?.classList.add('show');
+          tagFilterEl?.setAttribute('aria-hidden', 'false');
+        } else {
+          uploaderFilter.classList.remove('show');
+          uploaderFilter.setAttribute('aria-hidden', 'true');
           uploaderInput.value = "";
           const lbl = document.getElementById('uploaderLabel');
           if (lbl) lbl.textContent = 'All';
+          tagFilterEl?.classList.remove('show');
+          tagFilterEl?.setAttribute('aria-hidden', 'true');
+          // Reset tag filter
+          activeTagFilter = null;
+          const tagSelect = document.getElementById('tagFilter');
+          if (tagSelect) tagSelect.value = '';
+          const tagLbl = document.getElementById('tagFilterLabel');
+          if (tagLbl) tagLbl.textContent = 'All';
         } 
  
         renderTable(); 
