@@ -2388,7 +2388,7 @@ td.uploader-column {
    ========================= */
 
 .actions-column {
-  width: 100px;
+  width: 52px;
   text-align: left;
   padding-left: 0 !important;
   white-space: nowrap;
@@ -2418,13 +2418,11 @@ td.uploader-column {
   border-color: #0078a8;
 }
 
-/* Align [Edit] [History] links exactly under Actions header */
+/* Stack [Edit] and [History] vertically */
 .actions-column .db-link {
-  display: inline-block;
+  display: block;
   margin-left: 0 !important;
   padding: 0;
-  
-  /* Enhanced button styling */
   color: #64748b;
   font-weight: 600;
   cursor: pointer;
