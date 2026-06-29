@@ -1637,7 +1637,7 @@ main.databasecontent {
   --uploader-pill-w: 150px; /* tweak 130–170 */
 
   /* Forced table col widths (Photographer/Coords) */
-  --col-photographer: 110px;
+  --col-photographer: 115px;
   --col-coords: 125px;
 }
 
@@ -1677,8 +1677,8 @@ td.uploader-column {
 
 .meta-visible th.uploaded-column,
 .meta-visible td.uploaded-column {
-  width: 110px;
-  max-width: 110px;
+  width: 115px;
+  max-width: 115px;
   font-size: 0.78rem;
   white-space: normal;
   word-break: break-word;
@@ -2371,14 +2371,14 @@ td.uploader-column {
 /* Optional: tighten more on smaller screens (kept identical behavior) */
 @media (max-width: 900px){
   :root{
-    --col-photographer: 100px;
+    --col-photographer: 105px;
     --col-coords: 115px;
   }
 }
 
 @media (max-width: 600px){
   :root{
-    --col-photographer: 92px;
+    --col-photographer: 97px;
     --col-coords: 105px;
   }
 }
