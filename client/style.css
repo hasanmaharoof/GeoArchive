@@ -1680,7 +1680,8 @@ td.uploader-column {
   width: 110px;
   max-width: 110px;
   font-size: 0.78rem;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* Wider database layout */
