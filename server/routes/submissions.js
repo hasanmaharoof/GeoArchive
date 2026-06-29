@@ -470,17 +470,26 @@ router.post('/admin/fix-revision-timestamps', requireAdmin, async (req, res) => 
 router.get('/approved', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, caption, source, photographer,
-              year, month, day, estimated,
-              photo_url,
-              ST_X(geom) AS lng,
-              ST_Y(geom) AS lat,
-              location, notes, user_id, created_at,
-              location_confidence, direction
-       FROM submissions
-       WHERE status = 'approved'
-         AND deleted = FALSE
-       ORDER BY created_at DESC`
+      `SELECT s.id, s.caption, s.source, s.photographer,
+              s.year, s.month, s.day, s.estimated,
+              s.photo_url,
+              ST_X(s.geom) AS lng,
+              ST_Y(s.geom) AS lat,
+              s.location, s.notes, s.user_id, s.created_at,
+              s.location_confidence, s.direction,
+              COALESCE(
+                json_agg(
+                  json_build_object('id', t.id, 'name', t.name, 'slug', t.slug)
+                ) FILTER (WHERE t.id IS NOT NULL),
+                '[]'
+              ) AS tags
+       FROM submissions s
+       LEFT JOIN submission_tags st ON st.submission_id = s.id
+       LEFT JOIN tags t ON t.id = st.tag_id
+       WHERE s.status = 'approved'
+         AND s.deleted = FALSE
+       GROUP BY s.id
+       ORDER BY s.created_at DESC`
     );
     return res.json(result.rows);
   } catch (err) {

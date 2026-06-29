@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tags — GeoArchive</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin=""/>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="auth.js"></script>
+  <link rel="icon" type="image/x-icon" href="logos/favicon.png">
+</head>
+<body class="about">
+  <span id="username-display" class="username-ellipse"></span>
+
+  <!-- TOPNAV -->
+  <div class="topnav">
+    <a href="/"><img src="logos/logo.png" class="logo" alt="Logo"></a>
+    <div class="nav-links">
+      <div class="topnav-left">
+        <a class="page" href="/map">Map</a>
+        <a class="page" href="/database">Database</a>
+        <a class="page" href="/contribute">Contribute</a>
+        <a class="page" href="/about">About</a>
+        <a id="admin-link" class="page" href="/admin" style="display:none">Admin</a>
+      </div>
+      <div class="topnav-right">
+        <div id="topnav-auth">
+          <a class="page" href="/login" id="login-link">Login</a>
+        </div>
+        <a class="page" href="/recent">Recent</a>
+        <a class="page" href="/forum">Forum</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="aboutcontent">
+    <h2>Tags</h2>
+    <p class="prose">Tags help identify records belonging to institutions, collections, or thematic groups. Any logged-in user can create and apply tags to records.</p>
+
+    <div id="tags-loading" style="color:#94a3b8; margin-top:24px;">Loading tags...</div>
+    <div id="tags-error" style="color:#ef4444; display:none; margin-top:24px;"></div>
+
+    <!-- Tag detail view (shown when ?tag=slug) -->
+    <div id="tag-detail" style="display:none;">
+      <div id="tag-detail-header" style="margin: 24px 0 16px;"></div>
+      <div id="tag-records-list"></div>
+      <p style="margin-top:16px;"><a href="/tags" style="color:#0369a1;">← All tags</a></p>
+    </div>
+
+    <!-- All tags list -->
+    <div id="tags-list" style="display:none; margin-top:24px;"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footerfront">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <p class="footer-title">GeoArchive™</p>
+        <p class="footer-tagline">Mapping and preserving historical media</p>
+      </div>
+      <nav class="footer-links">
+        <a href="/map">Map</a>
+        <a href="/database">Database</a>
+        <a href="/contribute">Contribute</a>
+        <a href="/about">About</a>
+        <a href="/forum">Forum</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { API_BASE_URL } from './config.js';
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function formatDate(year, month, day, estimated) {
+      if (!year) return 'Undated';
+      let s = String(year);
+      if (month) {
+        const name = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
+        s = `${name} ${year}`;
+        if (day) s = `${name} ${day}, ${year}`;
+      }
+      return estimated ? `c. ${s}` : s;
+    }
+
+    const slug = new URLSearchParams(window.location.search).get('tag');
+
+    async function loadTagDetail(slug) {
+      document.getElementById('tags-loading').textContent = 'Loading...';
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/tags/${encodeURIComponent(slug)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { tag, records } = await res.json();
+
+        document.title = `${tag.name} — GeoArchive Tags`;
+        document.getElementById('tags-loading').style.display = 'none';
+        document.getElementById('tag-detail').style.display = 'block';
+
+        document.getElementById('tag-detail-header').innerHTML = `
+          <h3 style="margin:0 0 4px; font-size:1.4rem; font-weight:700; color:#0f172a;">${escapeHtml(tag.name)}</h3>
+          ${tag.description ? `<p style="margin:4px 0 8px; color:#475569;">${escapeHtml(tag.description)}</p>` : ''}
+          <p style="margin:0; font-size:0.88rem; color:#94a3b8;">
+            ${records.length} record${records.length !== 1 ? 's' : ''} &middot; Created by
+            <a href="/user/${encodeURIComponent(tag.created_by)}" style="color:#0369a1;">@${escapeHtml(tag.created_by)}</a>
+          </p>
+        `;
+
+        if (records.length === 0) {
+          document.getElementById('tag-records-list').innerHTML = '<p style="color:#94a3b8; margin-top:16px;">No records with this tag yet.</p>';
+          return;
+        }
+
+        document.getElementById('tag-records-list').innerHTML = records.map(r => `
+          <div class="tag-record-card">
+            ${r.photo_url ? `<img src="${escapeHtml(r.photo_url)}" alt="" class="tag-record-thumb">` : '<div class="tag-record-thumb tag-record-thumb-empty"></div>'}
+            <div class="tag-record-info">
+              <p class="tag-record-caption">${escapeHtml(r.caption || 'No description')}</p>
+              <p class="tag-record-meta">
+                ${escapeHtml(formatDate(r.year, r.month, r.day, r.estimated))}
+                ${r.photographer ? ` &middot; ${escapeHtml(r.photographer)}` : ''}
+              </p>
+              <a href="/database?id=${encodeURIComponent(r.id)}" class="tag-record-link">View in database →</a>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('tags-loading').style.display = 'none';
+        const errEl = document.getElementById('tags-error');
+        errEl.style.display = 'block';
+        errEl.textContent = 'Failed to load tag. ' + err.message;
+      }
+    }
+
+    async function loadAllTags() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/tags`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const tags = await res.json();
+
+        document.getElementById('tags-loading').style.display = 'none';
+        const list = document.getElementById('tags-list');
+        list.style.display = 'block';
+
+        if (tags.length === 0) {
+          list.innerHTML = '<p style="color:#94a3b8;">No tags have been created yet. Open any record in the database and use the Tags panel to create one.</p>';
+          return;
+        }
+
+        list.innerHTML = `
+          <div class="tags-grid">
+            ${tags.map(t => `
+              <a href="/tags?tag=${encodeURIComponent(t.slug)}" class="tag-browse-card">
+                <span class="tag-browse-name">${escapeHtml(t.name)}</span>
+                <span class="tag-browse-count">${t.record_count} record${t.record_count !== 1 ? 's' : ''}</span>
+                ${t.description ? `<span class="tag-browse-desc">${escapeHtml(t.description)}</span>` : ''}
+              </a>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById('tags-loading').style.display = 'none';
+        const errEl = document.getElementById('tags-error');
+        errEl.style.display = 'block';
+        errEl.textContent = 'Failed to load tags. ' + err.message;
+      }
+    }
+
+    if (slug) {
+      loadTagDetail(slug);
+    } else {
+      loadAllTags();
+    }
+  </script>
+</body>
+</html>

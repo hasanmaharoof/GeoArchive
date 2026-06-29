@@ -98,8 +98,14 @@
           </button>
         </div>
 
-        <!-- Right side: uploader filter + KML export + show meta -->
+        <!-- Right side: tag filter + uploader filter + KML export + show meta -->
         <div class="filter-right">
+          <div class="tag-filter-group">
+            <span class="year-label">Filter by tag: <span id="tagFilterLabel" class="uploader-label-value">All</span></span>
+            <select id="tagFilter">
+              <option value="">All tags</option>
+            </select>
+          </div>
           <div id="uploader-filter" class="uploader-filter" aria-hidden="true">
             <div class="year-filter-label-row uploader-label-row">
               <span class="year-label">Filter by uploader: <span id="uploaderLabel" class="uploader-label-value">All</span></span>
@@ -152,14 +158,15 @@
   <script type="module"> 
     import { API_BASE_URL } from './config.js'; 
  
-    let initialUploaderApplied = false; 
-    let allRecords = []; 
+    let initialUploaderApplied = false;
+    let allRecords = [];
     let currentFilteredRecords = [];
-    let highlightApplied = false; 
-    let userLocation = null; 
-    let sortByNearest = false; 
+    let highlightApplied = false;
+    let userLocation = null;
+    let sortByNearest = false;
     let currentSort = { column: null, direction: 'asc' };
     let locationPolygon = null; // array of [lat, lng] pairs when active
+    let activeTagFilter = null;
  
     const uploaderFilter = document.getElementById('uploader-filter'); 
     const uploaderInput = document.getElementById('uploaderInput'); 
@@ -524,11 +531,28 @@
       renderTable();
     }
  
-    async function loadApprovedRecords() { 
-      try { 
-        const res = await fetch(`${API_BASE_URL}/api/submissions/approved`); 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`); 
-        allRecords = await res.json(); 
+    function populateTagFilter() {
+      const select = document.getElementById('tagFilter');
+      if (!select) return;
+      const tagMap = new Map();
+      allRecords.forEach(r => (r.tags || []).forEach(t => { if (!tagMap.has(t.id)) tagMap.set(t.id, t); }));
+      const current = select.value;
+      select.innerHTML = '<option value="">All tags</option>';
+      [...tagMap.values()].sort((a, b) => a.name.localeCompare(b.name)).forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.name;
+        select.appendChild(opt);
+      });
+      if (current) select.value = current;
+    }
+
+    async function loadApprovedRecords() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/submissions/approved`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        allRecords = await res.json();
+        populateTagFilter(); 
  
         const queryId = getQueryId(); 
         if (queryId) { 
@@ -643,6 +667,11 @@
         ); 
       }
 
+      // Tag filter
+      if (activeTagFilter) {
+        filtered = filtered.filter(r => (r.tags || []).some(t => String(t.id) === String(activeTagFilter)));
+      }
+
       // Location polygon filter
       if (locationPolygon) {
         filtered = filtered.filter(r => {
@@ -689,6 +718,7 @@
         row.dataset.id = id;
         
         row.dataset.recordData = JSON.stringify({
+          id: id,
           caption: caption || '',
           source: source || '',
           photographer: photographer || '',
@@ -701,7 +731,8 @@
           lat: lat || '',
           lng: lng || '',
           location_confidence: record.location_confidence || '',
-          direction: typeof direction === 'number' ? direction : ''
+          direction: typeof direction === 'number' ? direction : '',
+          tags: record.tags || []
         });
  
         const safePhotographer = escapeHtml(photographer || 'N/A'); 
@@ -723,7 +754,10 @@
             } 
           </td> 
           <td class="col-date">${escapeHtml(formattedDate)}</td> 
-          <td class="col-caption">${makeShowMoreCell({ kind: 'caption', rawText: caption || 'No description provided' })}</td> 
+          <td class="col-caption">
+            ${makeShowMoreCell({ kind: 'caption', rawText: caption || 'No description provided' })}
+            ${record.tags && record.tags.length > 0 ? `<div class="record-tag-chips">${record.tags.map(t => `<a href="/tags/${escapeHtml(t.slug)}" class="record-tag-chip">${escapeHtml(t.name)}</a>`).join('')}</div>` : ''}
+          </td>
           <td class="col-source">${makeShowMoreCell({ kind: 'source', rawText: source || 'N/A' })}</td> 
           <td class="col-photographer">${safePhotographer}</td> 
           <td class="col-coords">${coords}${confidenceBadge}</td> 
@@ -928,7 +962,14 @@
         const val = uploaderInput.value.trim();
         const lbl = document.getElementById('uploaderLabel');
         if (lbl) lbl.textContent = val || 'All';
-        renderTable(); 
+        renderTable();
+      });
+
+      document.getElementById('tagFilter')?.addEventListener('change', (e) => {
+        activeTagFilter = e.target.value || null;
+        const lbl = document.getElementById('tagFilterLabel');
+        if (lbl) lbl.textContent = e.target.options[e.target.selectedIndex]?.text || 'All';
+        renderTable();
       }); 
  
       // Show more/less toggles (Caption + Source + Notes) 
@@ -1018,7 +1059,35 @@
         }
         renderTable();
       });
- 
+
+      // Called from the tag panel in the edit modal to keep the table in sync
+      window._updateRecordTags = (recordId, tags) => {
+        const record = allRecords.find(r => String(r.id) === String(recordId));
+        if (!record) return;
+        record.tags = tags;
+        // Update the row's data attribute and re-render its chips
+        const row = document.querySelector(`#records-table tr[data-id="${recordId}"]`);
+        if (row) {
+          try {
+            const data = JSON.parse(row.dataset.recordData || '{}');
+            data.tags = tags;
+            row.dataset.recordData = JSON.stringify(data);
+          } catch { /* ignore */ }
+          const chip = row.querySelector('.record-tag-chips');
+          const cell = row.querySelector('.col-caption');
+          if (cell) {
+            if (chip) chip.remove();
+            if (tags.length > 0) {
+              const div = document.createElement('div');
+              div.className = 'record-tag-chips';
+              div.innerHTML = tags.map(t => `<a href="/tags/${escapeHtml(t.slug)}" class="record-tag-chip">${escapeHtml(t.name)}</a>`).join('');
+              cell.appendChild(div);
+            }
+          }
+        }
+        populateTagFilter();
+      };
+
     }); 
   </script>
  
@@ -1089,7 +1158,19 @@
     <span class="close" id="editModalClose">&times;</span> 
     <h2>Edit Record</h2> 
     
-    <form id="editForm"> 
+    <!-- Tags panel — changes are instant, no edit summary needed -->
+    <div id="editTagsPanel" class="edit-tags-panel">
+      <h3 class="edit-tags-heading">Tags</h3>
+      <div id="editTagsList" class="edit-tags-list"></div>
+      <div class="edit-tags-input-row">
+        <input type="text" id="editTagInput" placeholder="Add or create a tag..." autocomplete="off">
+        <button type="button" id="editTagAddBtn">Add</button>
+      </div>
+      <div id="editTagSuggestions" class="edit-tag-suggestions" style="display:none;"></div>
+      <p id="editTagMsg" class="edit-tag-msg"></p>
+    </div>
+
+    <form id="editForm">
       <input type="hidden" name="id" id="editRecordId"> 
  
       <!-- Photo Details -->
@@ -1352,18 +1433,187 @@
     }
   });
  
-  // Close modal 
+  // Close modal
   editModalClose.addEventListener('click', () => {
     editModal.classList.add('modal-hidden');
     editModal.classList.remove('modal-open');
-  }); 
-  
-  window.addEventListener('click', e => { 
+  });
+
+  window.addEventListener('click', e => {
     if (e.target === editModal) {
       editModal.classList.add('modal-hidden');
       editModal.classList.remove('modal-open');
     }
-  }); 
+  });
+
+  // -------------------------------------------------------
+  // Tag panel
+  // -------------------------------------------------------
+  let currentEditRecordId = null;
+  let currentEditRecordTags = []; // [{id, name, slug}]
+  let allTagsCache = [];
+
+  async function loadAllTags() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/tags`);
+      if (res.ok) allTagsCache = await res.json();
+    } catch { /* non-fatal */ }
+  }
+
+  function renderTagChips() {
+    const list = document.getElementById('editTagsList');
+    if (!list) return;
+    if (currentEditRecordTags.length === 0) {
+      list.innerHTML = '<span class="edit-tags-empty">No tags yet.</span>';
+      return;
+    }
+    list.innerHTML = currentEditRecordTags.map(t =>
+      `<span class="edit-tag-chip" data-tag-id="${t.id}">
+        ${escapeHtmlTags(t.name)}
+        <button type="button" class="edit-tag-chip-remove" data-tag-id="${t.id}" title="Remove tag">&times;</button>
+      </span>`
+    ).join('');
+    list.querySelectorAll('.edit-tag-chip-remove').forEach(btn => {
+      btn.addEventListener('click', () => removeTagFromRecord(parseInt(btn.dataset.tagId)));
+    });
+  }
+
+  function escapeHtmlTags(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  async function addTagToRecord(tagId, tagName, tagSlug) {
+    const msg = document.getElementById('editTagMsg');
+    try {
+      const user = auth.currentUser;
+      if (!user) { if (msg) msg.textContent = 'You must be logged in to add tags.'; return; }
+      const token = await user.getIdToken();
+      const res = await fetch(`${API_BASE_URL}/api/tags/${tagId}/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify({ submission_id: currentEditRecordId })
+      });
+      if (res.ok) {
+        if (!currentEditRecordTags.find(t => t.id === tagId)) {
+          currentEditRecordTags.push({ id: tagId, name: tagName, slug: tagSlug });
+        }
+        renderTagChips();
+        // Update in allRecords so table chip reflects immediately
+        if (typeof window._updateRecordTags === 'function') window._updateRecordTags(currentEditRecordId, currentEditRecordTags);
+        if (msg) msg.textContent = '';
+      } else {
+        const data = await res.json().catch(() => ({}));
+        if (msg) msg.textContent = data.error || 'Failed to add tag.';
+      }
+    } catch (err) {
+      if (msg) msg.textContent = 'Network error.';
+    }
+  }
+
+  async function removeTagFromRecord(tagId) {
+    const msg = document.getElementById('editTagMsg');
+    try {
+      const user = auth.currentUser;
+      if (!user) { if (msg) msg.textContent = 'You must be logged in.'; return; }
+      const token = await user.getIdToken();
+      const res = await fetch(`${API_BASE_URL}/api/tags/${tagId}/records/${currentEditRecordId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include'
+      });
+      if (res.ok) {
+        currentEditRecordTags = currentEditRecordTags.filter(t => t.id !== tagId);
+        renderTagChips();
+        if (typeof window._updateRecordTags === 'function') window._updateRecordTags(currentEditRecordId, currentEditRecordTags);
+        if (msg) msg.textContent = '';
+      } else {
+        if (msg) msg.textContent = 'Failed to remove tag.';
+      }
+    } catch {
+      if (msg) msg.textContent = 'Network error.';
+    }
+  }
+
+  async function openTagPanel(recordId, existingTags) {
+    currentEditRecordId = parseInt(recordId);
+    currentEditRecordTags = (existingTags || []).map(t => ({ id: t.id, name: t.name, slug: t.slug }));
+    renderTagChips();
+    if (allTagsCache.length === 0) await loadAllTags();
+    document.getElementById('editTagInput').value = '';
+    document.getElementById('editTagSuggestions').style.display = 'none';
+    const msg = document.getElementById('editTagMsg');
+    if (msg) msg.textContent = '';
+  }
+
+  // Tag input autocomplete
+  const tagInput = document.getElementById('editTagInput');
+  const tagSuggestions = document.getElementById('editTagSuggestions');
+
+  tagInput?.addEventListener('input', () => {
+    const query = tagInput.value.trim().toLowerCase();
+    if (!query) { tagSuggestions.style.display = 'none'; return; }
+    const matches = allTagsCache.filter(t => t.name.toLowerCase().includes(query));
+    const alreadyAdded = new Set(currentEditRecordTags.map(t => t.id));
+    const available = matches.filter(t => !alreadyAdded.has(t.id));
+    const exactMatch = allTagsCache.some(t => t.name.toLowerCase() === query);
+    let html = available.map(t =>
+      `<div class="tag-suggestion-item" data-tag-id="${t.id}" data-tag-name="${escapeHtmlTags(t.name)}" data-tag-slug="${escapeHtmlTags(t.slug)}">
+        ${escapeHtmlTags(t.name)} <span class="tag-suggestion-count">${t.record_count} record${t.record_count !== 1 ? 's' : ''}</span>
+      </div>`
+    ).join('');
+    if (!exactMatch && query.length >= 2) {
+      html += `<div class="tag-suggestion-create" data-tag-name="${escapeHtmlTags(tagInput.value.trim())}">
+        + Create tag "<strong>${escapeHtmlTags(tagInput.value.trim())}</strong>"
+      </div>`;
+    }
+    if (!html) { tagSuggestions.style.display = 'none'; return; }
+    tagSuggestions.innerHTML = html;
+    tagSuggestions.style.display = 'block';
+    tagSuggestions.querySelectorAll('.tag-suggestion-item').forEach(item => {
+      item.addEventListener('click', () => {
+        addTagToRecord(parseInt(item.dataset.tagId), item.dataset.tagName, item.dataset.tagSlug);
+        tagInput.value = '';
+        tagSuggestions.style.display = 'none';
+      });
+    });
+    tagSuggestions.querySelectorAll('.tag-suggestion-create').forEach(item => {
+      item.addEventListener('click', async () => {
+        const name = item.dataset.tagName;
+        const msg = document.getElementById('editTagMsg');
+        try {
+          const user = auth.currentUser;
+          if (!user) { if (msg) msg.textContent = 'You must be logged in.'; return; }
+          const token = await user.getIdToken();
+          const res = await fetch(`${API_BASE_URL}/api/tags`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            credentials: 'include',
+            body: JSON.stringify({ name })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            allTagsCache.push({ ...data, record_count: 0 });
+            await addTagToRecord(data.id, data.name, data.slug);
+          } else {
+            if (msg) msg.textContent = data.error || 'Failed to create tag.';
+          }
+        } catch {
+          if (msg) msg.textContent = 'Network error.';
+        }
+        tagInput.value = '';
+        tagSuggestions.style.display = 'none';
+      });
+    });
+  });
+
+  document.getElementById('editTagAddBtn')?.addEventListener('click', () => {
+    tagInput.dispatchEvent(new Event('input'));
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#editTagsPanel')) tagSuggestions.style.display = 'none';
+  }, true); 
  
   // Event delegation for Actions column 
   document.addEventListener('click', e => { 
@@ -1434,6 +1684,8 @@
 
     editModal.classList.remove('modal-hidden');
     editModal.classList.add('modal-open');
+
+    openTagPanel(id, recordData.tags || []);
   });
   
   // Submit form 
