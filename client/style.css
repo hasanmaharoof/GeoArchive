@@ -2340,7 +2340,8 @@ td.uploader-column {
 #records-table td:nth-child(6) {
   width: var(--col-photographer) !important;
   max-width: var(--col-photographer) !important;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 #records-table th:nth-child(7),
