@@ -2221,7 +2221,7 @@ td.uploader-column {
 #records-table td:nth-child(2) { width: clamp(110px, 18vw, 220px); }
 
 #records-table th:nth-child(3),
-#records-table td:nth-child(3) { width: 120px; }
+#records-table td:nth-child(3) { width: 115px; }
 
 /* Image column responsive */
 #records-table td img {
@@ -2388,7 +2388,7 @@ td.uploader-column {
    ========================= */
 
 .actions-column {
-  width: 52px;
+  width: 57px;
   text-align: left;
   padding-left: 0 !important;
   white-space: nowrap;
