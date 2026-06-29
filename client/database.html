@@ -756,7 +756,7 @@
           <td class="col-date">${escapeHtml(formattedDate)}</td> 
           <td class="col-caption">
             ${makeShowMoreCell({ kind: 'caption', rawText: caption || 'No description provided' })}
-            ${record.tags && record.tags.length > 0 ? `<div class="record-tag-chips">${record.tags.map(t => `<a href="/tags/${escapeHtml(t.slug)}" class="record-tag-chip">${escapeHtml(t.name)}</a>`).join('')}</div>` : ''}
+            ${record.tags && record.tags.length > 0 ? `<div class="record-tag-chips">${record.tags.map(t => `<a href="/tags?tag=${encodeURIComponent(t.slug)}" class="record-tag-chip">${escapeHtml(t.name)}</a>`).join('')}</div>` : ''}
           </td>
           <td class="col-source">${makeShowMoreCell({ kind: 'source', rawText: source || 'N/A' })}</td> 
           <td class="col-photographer">${safePhotographer}</td> 
@@ -1080,7 +1080,7 @@
             if (tags.length > 0) {
               const div = document.createElement('div');
               div.className = 'record-tag-chips';
-              div.innerHTML = tags.map(t => `<a href="/tags/${escapeHtml(t.slug)}" class="record-tag-chip">${escapeHtml(t.name)}</a>`).join('');
+              div.innerHTML = tags.map(t => `<a href="/tags?tag=${encodeURIComponent(t.slug)}" class="record-tag-chip">${escapeHtml(t.name)}</a>`).join('');
               cell.appendChild(div);
             }
           }
