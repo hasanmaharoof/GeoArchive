@@ -1677,8 +1677,8 @@ td.uploader-column {
 
 .meta-visible th.uploaded-column,
 .meta-visible td.uploaded-column {
-  width: 115px;
-  max-width: 115px;
+  width: 110px;
+  max-width: 110px;
   font-size: 0.78rem;
   white-space: normal;
   word-break: break-word;
