@@ -262,7 +262,7 @@
     <div id="form-help-modal">
       <h3>Coordinates</h3>
       <p>
-        On most map services, such as Google Maps, right-click the <b>exact</b> location of your photo, then copy the
+        On most map services, such as Google Maps, right-click the exact location of your photo, then copy the
         coordinates given. Satellite view is recommended to better view surroundings.
       </p>
       <p>
@@ -534,6 +534,23 @@
           responseEl.textContent = "❌ Camera direction must be between 0 and 359 degrees.";
           responseEl.style.color = "red";
           return;
+        }
+      }
+
+      // Validate that month/day combination is a real calendar date
+      const isUnknownDate = document.getElementById("unknownDate").checked;
+      if (!isUnknownDate) {
+        const yearVal  = parseInt(document.getElementById("year").value, 10);
+        const monthVal = parseInt(document.getElementById("month").value, 10);
+        const dayVal   = parseInt(document.getElementById("day").value, 10);
+
+        if (!isNaN(monthVal) && !isNaN(dayVal)) {
+          const d = new Date(yearVal, monthVal - 1, dayVal);
+          if (d.getFullYear() !== yearVal || d.getMonth() !== monthVal - 1 || d.getDate() !== dayVal) {
+            responseEl.textContent = "❌ Invalid date — " + monthVal + "/" + dayVal + " does not exist.";
+            responseEl.style.color = "red";
+            return;
+          }
         }
       }
 
