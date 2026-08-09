@@ -10,6 +10,7 @@ body, html {
 /* scrollbar */
 html {
   overflow-y: scroll;
+  overflow-x: hidden;
   scrollbar-gutter: stable;
 }
 
@@ -17,6 +18,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 a {
@@ -35,23 +37,39 @@ a {
   height: 44px;
 }
 
+.topnav > a {
+  flex-shrink: 0;
+}
+
 .nav-links {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-grow: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .topnav-left {
   display: flex;
   gap: 8px;
   margin-left: 8px;
+  flex-shrink: 0;
 }
 
 .topnav-right {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
 .logo,
@@ -99,6 +117,29 @@ a {
 #topnav-auth a:hover {
   text-decoration: underline;
   color: #007BFF;
+}
+
+/* Tighter nav on small screens so fewer swipes are needed to see every link */
+@media (max-width: 700px) {
+  .topnav a.page {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .topnav-left {
+    gap: 2px;
+    margin-left: 4px;
+  }
+
+  .topnav-right {
+    gap: 2px;
+    margin-left: 8px;
+  }
+
+  .logo,
+  .logo2 {
+    height: 26px;
+  }
 }
 
 /* USERNAME BOX */
