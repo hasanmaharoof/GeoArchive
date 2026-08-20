@@ -1122,14 +1122,13 @@
         top.scrollLeft = bottom.scrollLeft; 
       } 
  
-      // Sync scrolling both ways 
-      bottom.addEventListener("scroll", () => { 
-        top.scrollLeft = bottom.scrollLeft; 
-      }); 
- 
-      top.addEventListener("scroll", () => { 
-        bottom.scrollLeft = top.scrollLeft; 
-      }); 
+      // One-way sync: the real table drives the visual top bar.
+      // (top bar has pointer-events:none, so it's never scrolled by the
+      // user directly — writing back into `bottom` here just fights the
+      // native touch/momentum scroll and causes stutter/snap-back.)
+      bottom.addEventListener("scroll", () => {
+        top.scrollLeft = bottom.scrollLeft;
+      });
  
       // Update on resize 
       window.addEventListener("resize", update); 
