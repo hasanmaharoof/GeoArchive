@@ -3282,6 +3282,63 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   color: #0056b3;
 }
 
+/* Collapsible sidebar on mobile: nav becomes a fixed off-canvas drawer
+   parked mostly off-screen, leaving a sliver + toggle button visible */
+.tabs-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .main-forum-layout {
+    display: block;
+  }
+
+  .vertical-tabs {
+    position: fixed;
+    top: 44px;
+    left: 0;
+    width: 200px;
+    height: calc(100vh - 44px);
+    z-index: 500;
+    transform: translateX(calc(-100% + 30px));
+    transition: transform 0.25s ease;
+    box-shadow: 2px 0 14px rgba(15, 23, 42, 0.18);
+    overflow-y: auto;
+  }
+
+  .vertical-tabs.open {
+    transform: translateX(0);
+  }
+
+  .tabs-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 14px;
+    right: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(15, 23, 42, 0.15);
+    background: #fff;
+    color: #0078a8;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+    transition: transform 0.25s ease;
+  }
+
+  .vertical-tabs.open .tabs-toggle {
+    transform: rotate(180deg);
+  }
+
+  .forumcontent {
+    width: 100%;
+  }
+}
+
 /* Login link (above tabs) */
 .login-link {
   padding: 0 20px 15px 25px; /* match tab spacing but simpler */
