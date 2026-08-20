@@ -3303,7 +3303,6 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     z-index: 500;
     transform: translateX(calc(-100% + 30px));
     transition: transform 0.25s ease;
-    box-shadow: 2px 0 14px rgba(15, 23, 42, 0.18);
     overflow-y: auto;
   }
 
