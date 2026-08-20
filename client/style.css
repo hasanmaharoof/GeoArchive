@@ -4,11 +4,11 @@
 body, html {
   margin: 0;
   padding: 0;
-  height: 100%;
 }
 
 /* scrollbar */
 html {
+  height: 100%;
   overflow-y: scroll;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
@@ -3239,7 +3239,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
 .main-forum-layout {
   display: flex;
-  min-height: 100%;
+  min-height: 100vh;
   flex-shrink: 0;
   font-family: 'Inter', sans-serif;
 }
