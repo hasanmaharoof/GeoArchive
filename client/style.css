@@ -3295,10 +3295,10 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
   .vertical-tabs {
     position: fixed;
-    top: 44px;
+    top: var(--topnav-height, 44px);
     left: 0;
     width: 200px;
-    height: calc(100vh - 44px);
+    height: calc(100vh - var(--topnav-height, 44px));
     z-index: 500;
     transform: translateX(calc(-100% + 30px));
     transition: transform 0.25s ease;

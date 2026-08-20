@@ -39,6 +39,18 @@
     <a href="/users" role="tab" class="tab active">Users</a>
   </nav>
 
+  <script>
+    (function () {
+      function setTopnavHeight() {
+        var el = document.querySelector('.topnav');
+        if (el) document.documentElement.style.setProperty('--topnav-height', el.offsetHeight + 'px');
+      }
+      setTopnavHeight();
+      window.addEventListener('resize', setTopnavHeight);
+      window.addEventListener('load', setTopnavHeight);
+    })();
+  </script>
+
   <main class="forumcontent" role="tabpanel">
     <header class="recent-header">
       <h1>Contributors</h1>
