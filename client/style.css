@@ -2345,13 +2345,21 @@ td.uploader-column {
     white-space: nowrap;
   }
 
-  /* Still allow wrap for text-heavy columns */
+  /* Still allow wrap for text-heavy columns, but cap their width so a
+     single row doesn't force a huge horizontal scroll on mobile */
   #records-table th:nth-child(4),
   #records-table td:nth-child(4),
   #records-table th:nth-child(5),
   #records-table td:nth-child(5) {
     white-space: normal;
+    width: var(--col-textheavy) !important;
+    max-width: var(--col-textheavy) !important;
+    word-break: break-word;
   }
+}
+
+:root {
+  --col-textheavy: 240px;
 }
 
 /* Tighten spacing on medium screens */
@@ -2416,6 +2424,7 @@ td.uploader-column {
   :root{
     --col-photographer: 110px;
     --col-coords: 115px;
+    --col-textheavy: 200px;
   }
 }
 
@@ -2423,6 +2432,7 @@ td.uploader-column {
   :root{
     --col-photographer: 102px;
     --col-coords: 105px;
+    --col-textheavy: 150px;
   }
 }
 
