@@ -2356,6 +2356,13 @@ td.uploader-column {
     max-width: var(--col-textheavy) !important;
     word-break: break-word;
   }
+
+  /* Coordinates: let "lat, lng" wrap to a second line instead of
+     spilling into the actions column */
+  #records-table th:nth-child(7),
+  #records-table td:nth-child(7) {
+    white-space: normal;
+  }
 }
 
 :root {
