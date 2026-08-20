@@ -3293,6 +3293,15 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     display: block;
   }
 
+  /* Keep the navbar pinned at the true viewport top on forum pages so the
+     drawer (offset by --topnav-height) always sits flush beneath it,
+     even after scrolling the (very tall) page content underneath. */
+  body:has(.main-forum-layout) .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 600;
+  }
+
   .vertical-tabs {
     position: fixed;
     top: var(--topnav-height, 44px);
