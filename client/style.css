@@ -12,6 +12,8 @@ html {
   overflow-y: scroll;
   overflow-x: hidden;
   scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
