@@ -3350,6 +3350,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
   .forumcontent > * {
     min-width: calc(100vw - 60px);
+    box-sizing: border-box;
   }
 }
 
