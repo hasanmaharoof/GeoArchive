@@ -3348,7 +3348,13 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     -webkit-overflow-scrolling: touch;
   }
 
-  .forumcontent > * {
+  /* Only hold content at its full natural width (forcing the scroll
+     above) while the sidebar is expanded and actually pushing content
+     over. Collapsed, the sidebar is narrow enough that content should
+     just fit normally — padding included, no scroll needed — instead
+     of leaving its right-side padding stranded off the edge of the
+     screen with barely enough overflow to notice it's scrollable. */
+  .main-forum-layout:has(.vertical-tabs:not(.collapsed)) .forumcontent > * {
     min-width: calc(100vw - 60px);
     box-sizing: border-box;
   }
