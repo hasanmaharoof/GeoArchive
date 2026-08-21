@@ -41,18 +41,11 @@
 
   <script>
     (function () {
-      function setTopnavHeight() {
-        var el = document.querySelector('.topnav');
-        if (el) document.documentElement.style.setProperty('--topnav-height', el.offsetHeight + 'px');
-      }
       function setViewportHeight() {
         var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
         document.documentElement.style.setProperty('--viewport-height', h + 'px');
       }
-      setTopnavHeight();
       setViewportHeight();
-      window.addEventListener('resize', setTopnavHeight);
-      window.addEventListener('load', setTopnavHeight);
       window.addEventListener('resize', setViewportHeight);
       if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', setViewportHeight);
