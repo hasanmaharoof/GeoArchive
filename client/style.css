@@ -3299,9 +3299,12 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   body:has(.main-forum-layout) .topnav {
     position: sticky;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 600;
     width: 100%;
     box-sizing: border-box;
+    align-self: flex-start;
   }
 
   .vertical-tabs {
