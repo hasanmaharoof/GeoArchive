@@ -3295,16 +3295,21 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
   /* Keep the navbar pinned at the true viewport top on forum pages so the
      drawer (offset by --topnav-height) always sits flush beneath it,
-     even after scrolling the (very tall) page content underneath. */
+     even after scrolling the (very tall) page content underneath.
+     Fixed (not sticky) avoids WebKit bugs where a sticky flex child
+     inside a flex-direction:column body miscomputes its own width. */
   body:has(.main-forum-layout) .topnav {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 600;
-    width: 100%;
     box-sizing: border-box;
-    align-self: flex-start;
+  }
+
+  /* Topnav is out of flow now, so push the layout down by its height. */
+  body:has(.main-forum-layout) .main-forum-layout {
+    padding-top: var(--topnav-height, 44px);
   }
 
   .vertical-tabs {
