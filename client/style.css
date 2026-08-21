@@ -3289,34 +3289,28 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 }
 
 @media (max-width: 768px) {
-  .main-forum-layout {
-    display: block;
-  }
-
   /* The navbar on forum pages is left in normal document flow, exactly
      like every other page on the site, so it always renders at the same
      size. (An earlier position:fixed/sticky pinned-navbar approach was
      reverted: iOS Safari's per-site "Page Zoom" setting scales fixed/
      sticky elements differently from in-flow content, which made the
-     navbar mismatch the rest of the page for anyone not at 100% zoom.)
-     .topnav's height is a constant 44px (see the top of this file), so
-     the drawer below can anchor to that fixed value directly. */
+     navbar mismatch the rest of the page for anyone not at 100% zoom.) */
+
+  /* Sidebar pushes content (same flex row .main-forum-layout uses on
+     desktop) instead of overlaying it off-canvas, and is expanded by
+     default. The toggle button now shrinks it to a slim strip rather
+     than sliding it off-screen over the content, so it never covers
+     page content in either state. */
   .vertical-tabs {
-    position: fixed;
-    top: 44px;
-    left: 0;
+    position: relative;
+    flex-shrink: 0;
     width: 200px;
-    height: calc(100vh - 44px);
-    height: calc(100dvh - 44px);
-    height: calc(var(--viewport-height, 100dvh) - 44px);
-    z-index: 500;
-    transform: translateX(calc(-100% + 30px));
-    transition: transform 0.25s ease;
-    overflow-y: auto;
+    transition: width 0.25s ease;
+    overflow: hidden;
   }
 
-  .vertical-tabs.open {
-    transform: translateX(0);
+  .vertical-tabs.collapsed {
+    width: 30px;
   }
 
   .tabs-toggle {
@@ -3339,12 +3333,23 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     transition: transform 0.25s ease;
   }
 
-  .vertical-tabs.open .tabs-toggle {
+  .vertical-tabs.collapsed .tabs-toggle {
     transform: rotate(180deg);
   }
 
+  /* The content column never shrinks below its natural (un-squished)
+     width, so pushing the sidebar out never squeezes or hides it —
+     instead this box scrolls horizontally on its own, independent of
+     the topnav above and the sidebar beside it, which never move. */
   .forumcontent {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .forumcontent > * {
+    min-width: calc(100vw - 60px);
   }
 }
 
