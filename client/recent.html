@@ -50,21 +50,6 @@
     <a href="/users" role="tab" class="tab">Users</a>
   </nav>
 
-  <script>
-    (function () {
-      function setViewportHeight() {
-        var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        document.documentElement.style.setProperty('--viewport-height', h + 'px');
-      }
-      setViewportHeight();
-      window.addEventListener('resize', setViewportHeight);
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', setViewportHeight);
-        window.visualViewport.addEventListener('scroll', setViewportHeight);
-      }
-    })();
-  </script>
-
   <main class="forumcontent" role="tabpanel">
     <header class="recent-header">
       <h1>Recent Contributions</h1>
