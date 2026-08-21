@@ -3300,6 +3300,8 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     position: sticky;
     top: 0;
     z-index: 600;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .vertical-tabs {
