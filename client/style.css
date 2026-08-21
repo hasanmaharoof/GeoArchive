@@ -3309,6 +3309,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     width: 200px;
     height: calc(100vh - var(--topnav-height, 44px));
     height: calc(100dvh - var(--topnav-height, 44px));
+    height: calc(var(--viewport-height, 100dvh) - var(--topnav-height, 44px));
     z-index: 500;
     transform: translateX(calc(-100% + 30px));
     transition: transform 0.25s ease;
