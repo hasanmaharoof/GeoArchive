@@ -3313,13 +3313,25 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     width: 30px;
   }
 
+  /* The toggle lives in its own strip above the login row instead of
+     floating on top of it, so it never overlaps "@username · Logout"
+     regardless of username length or collapsed/expanded state. */
+  .sidebar-toggle-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 10px 0 0;
+  }
+
+  .vertical-tabs.collapsed .sidebar-toggle-row {
+    justify-content: center;
+    padding-right: 0;
+  }
+
   .tabs-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 14px;
-    right: 3px;
+    flex-shrink: 0;
     width: 24px;
     height: 24px;
     border-radius: 50%;
