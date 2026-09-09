@@ -3313,28 +3313,47 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
     width: 30px;
   }
 
+  /* Sits on top of the sidebar/content border (half in, half out) so
+     it's always visible regardless of collapsed/expanded width, and
+     is fixed to the viewport — not absolute within .vertical-tabs —
+     so the parent's overflow:hidden (which clips the shrinking nav
+     text) doesn't also clip the half of the button poking past the
+     border, and it stays reachable at screen-center while scrolling. */
   .tabs-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 14px;
-    right: 3px;
-    width: 24px;
-    height: 24px;
+    position: fixed;
+    top: 50%;
+    left: 200px;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 1px solid rgba(15, 23, 42, 0.15);
     background: #fff;
     color: #0078a8;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 1;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
-    transition: transform 0.25s ease;
+    transition: left 0.25s ease;
+    z-index: 5;
+  }
+
+  /* Icon lives in CSS (not the HTML button text) so it can swap
+     direction based on collapsed state without any JS beyond the
+     existing classList.toggle('collapsed') already on the button. */
+  .tabs-toggle::before {
+    content: '\00BB';
   }
 
   .vertical-tabs.collapsed .tabs-toggle {
-    transform: rotate(180deg);
+    left: 30px;
+  }
+
+  .vertical-tabs.collapsed .tabs-toggle::before {
+    content: '\00AB';
   }
 
   /* The content column never shrinks below its natural (un-squished)
