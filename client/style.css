@@ -3358,13 +3358,13 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
   /* The content column never shrinks below its natural (un-squished)
      width, so pushing the sidebar out never squeezes or hides it —
-     instead this box scrolls horizontally on its own, independent of
-     the topnav above and the sidebar beside it, which never move. */
+     instead its right edge is clipped while the sidebar is open. No
+     horizontal scrolling here: a sideways swipe toggles the sidebar
+     (see auth.js), and scrolling at the same time felt disorienting. */
   .forumcontent {
     flex: 1 1 auto;
     min-width: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
   }
 
   /* Only hold content at its full natural width (forcing the scroll
