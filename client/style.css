@@ -1743,6 +1743,24 @@ td.uploader-column {
   }
 }
 
+/* Below the desktop breakpoint, width:100% + side margins made the page
+   wider than the screen (whole-page horizontal scroll). Let it stretch to
+   fit instead; only the table itself scrolls sideways (.table-scroll). */
+@media (max-width: 1099px) {
+  .databasecontent {
+    width: auto;
+    min-width: 0;
+  }
+}
+
+/* Mobile: same side breathing room as the Contribute page */
+@media (max-width: 768px) {
+  .databasecontent {
+    margin-left: 22px;
+    margin-right: 22px;
+  }
+}
+
 /* Header */
 .db-header {
   display: flex;
