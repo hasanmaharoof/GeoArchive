@@ -4414,3 +4414,19 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   margin: 0 !important;              /* ✅ no bottom gap */
   object-fit: cover !important;
 }
+/* =========================
+   ~MOBILE TEXT SIZE TRIAL (About + User pages)
+   Slightly smaller text on phones only; desktop untouched.
+   To undo: delete this whole block.
+   ========================= */
+@media (max-width: 768px) {
+  .aboutcontent h2 { font-size: 1.8em; }                       /* was 2em */
+  .aboutcontent p.prose { font-size: 1rem; }                   /* was 1.1rem */
+  .aboutcontent > p.prose:first-of-type { font-size: 1.125rem; } /* was 1.25rem */
+
+  .profile-avatar { font-size: 27px; }                         /* was 30px */
+  .profile-info h1 { font-size: 25px; }                        /* was 28px */
+  .profile-meta { font-size: 15px; }                           /* was 16px */
+  .profile-bio h3 { font-size: 20px; }                         /* was 22px */
+  .profile-bio p { font-size: 16px; }                          /* was 18px */
+}
