@@ -788,28 +788,36 @@
         } 
       }); 
 
-      // Scroll to highlighted row after ALL rows and images are in the DOM
+      // Jump to the highlighted row immediately, then keep it centered as
+      // photos above it finish loading and push it down (instead of waiting
+      // for every image first, which could take several seconds). Stops
+      // re-centering once images settle, after 4s, or as soon as the user
+      // scrolls/touches the page themselves.
       if (targetId && !highlightApplied) {
         const targetRow = tbody.querySelector(`tr[data-id="${targetId}"]`);
         if (targetRow) {
-          const allImages = Array.from(tbody.querySelectorAll('img'));
-          const waitForImages = allImages.map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-              img.addEventListener('load', resolve, { once: true });
-              img.addEventListener('error', resolve, { once: true });
-              setTimeout(resolve, 4000);
-            });
-          });
+          highlightApplied = true;
+          const center = () => targetRow.scrollIntoView({ behavior: 'instant', block: 'center' });
+          center();
 
-          Promise.all(waitForImages).then(() => {
-            targetRow.scrollIntoView({ behavior: 'instant', block: 'center' });
-            setTimeout(() => targetRow.classList.add('fade-out'), 250);
-            setTimeout(() => {
-              targetRow.classList.remove('highlighted-row', 'fade-out');
-              highlightApplied = true;
-            }, 500);
-          });
+          const pending = Array.from(tbody.querySelectorAll('img')).filter(img => !img.complete);
+          let pinning = true;
+          const stopPinning = () => {
+            if (!pinning) return;
+            pinning = false;
+            ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev =>
+              window.removeEventListener(ev, stopPinning));
+            pending.forEach(img => img.removeEventListener('load', onImgLoad));
+          };
+          const onImgLoad = () => { if (pinning) center(); };
+
+          ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev =>
+            window.addEventListener(ev, stopPinning, { passive: true }));
+          pending.forEach(img => img.addEventListener('load', onImgLoad));
+          setTimeout(stopPinning, 4000);
+
+          setTimeout(() => targetRow.classList.add('fade-out'), 250);
+          setTimeout(() => targetRow.classList.remove('highlighted-row', 'fade-out'), 500);
         }
       }
 
