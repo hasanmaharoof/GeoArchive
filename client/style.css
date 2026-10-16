@@ -3349,8 +3349,8 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   .tabs-toggle::before {
     content: '';
     display: block;
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='%230078a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 3l4 4-4 4M7.5 3l4 4-4 4'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 
