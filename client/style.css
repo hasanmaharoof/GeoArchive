@@ -3343,9 +3343,15 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
 
   /* Icon lives in CSS (not the HTML button text) so it can swap
      direction based on collapsed state without any JS beyond the
-     existing classList.toggle('collapsed') already on the button. */
+     existing classList.toggle('collapsed') already on the button.
+     Drawn as an SVG chevron rather than a » text glyph, since a font
+     glyph sits on the text baseline and renders visibly off-center. */
   .tabs-toggle::before {
-    content: '\00BB';
+    content: '';
+    display: block;
+    width: 14px;
+    height: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='%230078a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 3l4 4-4 4M7.5 3l4 4-4 4'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 
   .vertical-tabs.collapsed .tabs-toggle {
@@ -3353,7 +3359,7 @@ body.database #historyModal .modal-content::-webkit-scrollbar-thumb:hover {
   }
 
   .vertical-tabs.collapsed .tabs-toggle::before {
-    content: '\00AB';
+    transform: scaleX(-1);
   }
 
   /* The content column never shrinks below its natural (un-squished)
