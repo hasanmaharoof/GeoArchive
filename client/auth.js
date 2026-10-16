@@ -477,3 +477,26 @@ document.addEventListener("click", (e) => {
     nav.classList.remove("collapsed");
   }
 });
+
+// Same pages: horizontal swipe toggles the sidebar. Swipe left collapses it
+// (content gets the full width); swipe right brings it back.
+let swipeStart = null;
+document.addEventListener("touchstart", (e) => {
+  swipeStart = e.touches.length === 1
+    ? { x: e.touches[0].clientX, y: e.touches[0].clientY, target: e.target }
+    : null;
+}, { passive: true });
+
+document.addEventListener("touchend", (e) => {
+  const nav = document.querySelector(".vertical-tabs");
+  const start = swipeStart;
+  swipeStart = null;
+  if (!start || !nav || !window.matchMedia("(max-width: 768px)").matches) return;
+  if (start.target.closest("input, textarea, select, #bio-overlay")) return;
+
+  const dx = e.changedTouches[0].clientX - start.x;
+  const dy = e.changedTouches[0].clientY - start.y;
+  if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return; // not a clear horizontal swipe
+
+  nav.classList.toggle("collapsed", dx < 0);
+}, { passive: true });
