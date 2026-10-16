@@ -461,3 +461,19 @@ async function resendVerificationEmail(user) {
 }
 
 export { app, auth, db, onAuthStateChanged };
+// Forum-style pages on mobile: make the sidebar easier to toggle than the
+// small round button alone. Tapping the page content collapses an expanded
+// sidebar; tapping anywhere on the collapsed strip expands it again.
+document.addEventListener("click", (e) => {
+  const nav = document.querySelector(".vertical-tabs");
+  if (!nav || !window.matchMedia("(max-width: 768px)").matches) return;
+  if (e.target.closest(".tabs-toggle")) return; // button has its own handler
+
+  const collapsed = nav.classList.contains("collapsed");
+  if (!collapsed && e.target.closest(".forumcontent")) {
+    nav.classList.add("collapsed");
+  } else if (collapsed && nav.contains(e.target)) {
+    e.preventDefault(); // don't follow a half-hidden tab link in the strip
+    nav.classList.remove("collapsed");
+  }
+});
